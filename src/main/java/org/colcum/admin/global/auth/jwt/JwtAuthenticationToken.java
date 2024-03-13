@@ -1,5 +1,6 @@
 package org.colcum.admin.global.auth.jwt;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -53,10 +54,10 @@ public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 
     @Override
     public String toString() {
-        return "JwtAuthenticationToken{" +
-            "principal=" + principal +
-            ", credentials='" + credentials + '\'' +
-            '}';
+        return new ToStringBuilder(this)
+            .append("principal", principal)
+            .append("credentials", credentials)
+            .toString();
     }
 
 }

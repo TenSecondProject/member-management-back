@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -82,12 +83,12 @@ public class Jwt {
 
         @Override
         public String toString() {
-            return "Claims{" +
-                "userId=" + userId +
-                ", roles=" + Arrays.toString(roles) +
-                ", iat=" + iat +
-                ", exp=" + exp +
-                '}';
+            return new ToStringBuilder(this)
+                .append("userId", userId)
+                .append("roles", Arrays.toString(roles))
+                .append("iat", iat)
+                .append("exp", exp)
+                .toString();
         }
 
     }
