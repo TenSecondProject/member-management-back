@@ -15,7 +15,7 @@ import org.colcum.admin.global.util.EmailValidator;
 import java.util.regex.Pattern;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class UserEntity extends BaseEntity {
@@ -23,38 +23,25 @@ public class UserEntity extends BaseEntity {
     @Column(nullable = false, length = 50, unique = true)
     private String email;
 
+    @Column(nullable = false, length = 100)
+    private String password;
+
     @Column(nullable = false, length = 50)
     private String name;
 
     @Column(nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
-    private Branch branch;
+    private Branch branch = Branch.JONGRO;
 
     @Column(nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
-    private UserType type = UserType.STAFF;
+    private UserType userType = UserType.STAFF;
 
     public UserEntity(String email, String name, Branch branch) {
         EmailValidator.validate(email);
         this.email = email;
         this.name = name;
         this.branch = branch;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Branch getBranch() {
-        return branch;
-    }
-
-    public UserType getType() {
-        return type;
     }
 
     public void setName(String name) {
@@ -65,8 +52,8 @@ public class UserEntity extends BaseEntity {
         this.branch = branch;
     }
 
-    public void setType(UserType type) {
-        this.type = type;
+    public void setType(UserType userType) {
+        this.userType = userType;
     }
 
 }
