@@ -15,11 +15,11 @@ public class EmailValidator {
             throw new EmailValidationException("Email must not be empty.");
         }
 
-        if (email.length() <= 50) {
+        if (email.length() > 50) {
             throw new EmailValidationException("Email is too long.");
         }
 
-        if (EMAIL_PATTERN.matcher(email).matches()) {
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
             throw new EmailValidationException("Invalid email format.");
         }
     }
