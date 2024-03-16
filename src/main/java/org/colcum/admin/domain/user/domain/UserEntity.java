@@ -8,16 +8,15 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.colcum.admin.global.Error.EmailValidationException;
+import lombok.ToString;
 import org.colcum.admin.global.common.domain.BaseEntity;
 import org.colcum.admin.global.util.EmailValidator;
-
-import java.util.regex.Pattern;
 
 @Entity
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@ToString
 public class UserEntity extends BaseEntity {
 
     @Column(nullable = false, length = 50, unique = true)
