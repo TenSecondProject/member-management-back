@@ -36,9 +36,10 @@ public class UserEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserType userType = UserType.STAFF;
 
-    public UserEntity(String email, String name, Branch branch) {
+    public UserEntity(String email, String password, String name, Branch branch) {
         EmailValidator.validate(email);
         this.email = email;
+        this.password = password;
         this.name = name;
         this.branch = branch;
     }
