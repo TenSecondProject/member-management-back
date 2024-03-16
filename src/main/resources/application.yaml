@@ -17,6 +17,11 @@ spring:
 server:
   port: 8080
 
+jwt:
+  issuer: 10Second
+  client-secret: ${JWT_SECRET}
+  expiry-seconds: 172800
+
 logging:
   level:
     org.springframework.web.servlet: debug
@@ -26,6 +31,9 @@ spring:
   config:
     activate:
       on-profile: local
+  sql:
+    init:
+      mode: always
 
   jpa:
     hibernate:
