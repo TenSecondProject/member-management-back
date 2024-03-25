@@ -1,4 +1,4 @@
-package org.colcum.admin.domain.post.domain;
+package org.colcum.admin.domain.post.domain.type;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
