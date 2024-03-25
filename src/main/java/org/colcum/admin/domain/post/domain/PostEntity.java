@@ -10,21 +10,28 @@ import jakarta.persistence.ForeignKey;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.colcum.admin.domain.post.domain.type.PostCategory;
+import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.common.domain.BaseEntity;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "post")
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Getter
 public class PostEntity extends BaseEntity {
 
     @Column(nullable = false, length = 255)
@@ -46,8 +53,11 @@ public class PostEntity extends BaseEntity {
 
     private LocalDate expiredDate;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private UserEntity user;
+
+    @OneToMany(mappedBy = "postEntity")
+    private List<CommentEntity> commentEntities = new ArrayList<>();
 
 }
