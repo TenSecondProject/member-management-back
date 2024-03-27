@@ -1,4 +1,4 @@
-package org.colcum.admin.global.auth.api;
+package org.colcum.admin.global.common.api.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
