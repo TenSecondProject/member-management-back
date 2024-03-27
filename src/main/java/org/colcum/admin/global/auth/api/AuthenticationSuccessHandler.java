@@ -6,10 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.colcum.admin.domain.user.domain.UserEntity;
-import org.colcum.admin.global.auth.application.UserAuthenticationService;
-import org.colcum.admin.global.auth.domain.UserContext;
 import org.colcum.admin.global.auth.jwt.Jwt;
-import org.colcum.admin.global.auth.jwt.JwtAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -23,7 +20,6 @@ import java.io.PrintWriter;
 public class AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final Jwt jwt;
-    private final UserAuthenticationService userAuthenticationService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
