@@ -9,8 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
 import org.colcum.admin.domain.post.api.dto.QPostResponseDto;
+import org.colcum.admin.domain.post.domain.PostEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.colcum.admin.domain.post.domain.QCommentEntity.commentEntity;
+import static org.colcum.admin.domain.post.domain.QEmojiReactionEntity.emojiReactionEntity;
 import static org.colcum.admin.domain.post.domain.QPostEntity.postEntity;
 
 @Component
@@ -26,28 +29,23 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
 
     private final JPAQueryFactory queryFactory;
 
-    @Override
+    @EntityGraph(attributePaths = {"commentEntities", "emojiReactionEntities"})
     public Page<PostResponseDto> search(PostSearchCondition condition, Pageable pageable) {
         BooleanBuilder builder = getBooleanBuilder(condition);
 
-        List<PostResponseDto> fetch = queryFactory
-            .select(new QPostResponseDto(
-                postEntity.id,
-                postEntity.title,
-                postEntity.content,
-                postEntity.status,
-                postEntity.createdBy,
-                postEntity.isBookmarked,
-                Expressions.constant(0)
-//                commentEntity.count().intValue()
-            ))
+        List<PostEntity> fetch = queryFactory
+            .select(postEntity)
             .from(postEntity)
-//            .rightJoin(postEntity.commentEntities, commentEntity)
+            .leftJoin(postEntity.commentEntities, commentEntity)
+            .leftJoin(postEntity.emojiReactionEntities, emojiReactionEntity)
             .where(builder)
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .groupBy(postEntity.id)
             .fetch();
+
+        List<PostResponseDto> dtos = fetch
+            .forEach();
 
         JPAQuery<Long> count = queryFactory
             .select(postEntity.count())
