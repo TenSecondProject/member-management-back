@@ -9,6 +9,7 @@ import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.domain.user.dao.UserRepository;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.util.Fixture;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,7 +31,6 @@ import static org.colcum.admin.global.util.Fixture.createFixtureUser;
 
 @SpringBootTest
 @ActiveProfiles("local")
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PostServiceTest {
 
     @Autowired
@@ -44,9 +44,15 @@ class PostServiceTest {
 
     private UserEntity user;
 
-    @BeforeAll
+    @BeforeEach
     void setup() {
         user = userRepository.save(createFixtureUser());
+    }
+
+    @AfterEach
+    void clean() {
+        userRepository.deleteAll();
+        postRepository.deleteAll();
     }
 
     @Test
