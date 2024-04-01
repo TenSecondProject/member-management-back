@@ -55,9 +55,43 @@ public class PostEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @ToString.Exclude
     private UserEntity user;
 
     @OneToMany(mappedBy = "postEntity")
+    @ToString.Exclude
     private List<CommentEntity> commentEntities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "postEntity")
+    @ToString.Exclude
+    private List<EmojiReactionEntity> emojiReactionEntities = new ArrayList<>();
+
+    public void addComment(CommentEntity commentEntity) {
+        this.commentEntities.add(commentEntity);
+        if (!commentEntity.getPostEntity().equals(this)) {
+            commentEntity.setPostEntity(this);
+        }
+    }
+
+    public void removeComment(CommentEntity commentEntity) {
+        this.commentEntities.remove(commentEntity);
+        commentEntity.setPostEntity(null);
+    }
+
+    public void addEmoji(EmojiReactionEntity emojiReactionEntity) {
+        this.emojiReactionEntities.add(emojiReactionEntity);
+        if (!emojiReactionEntity.getPostEntity().equals(this)) {
+            emojiReactionEntity.setPostEntity(this);
+        }
+    }
+
+    public void removeEmoji(EmojiReactionEntity emojiReactionEntity) {
+        this.emojiReactionEntities.remove(emojiReactionEntity);
+        emojiReactionEntity.setPostEntity(null);
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
+    }
 
 }
