@@ -1,9 +1,7 @@
 package org.colcum.admin.domain.post.api.dto;
 
-import com.querydsl.core.annotations.QueryProjection;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 
@@ -20,10 +18,9 @@ public class PostResponseDto {
     private String writtenBy;
     private boolean isBookmarked;
     private int commentCount;
-//    private List<EmojiResponse> emojis;
+    private List<EmojiResponseDto> emojiResponsDtos;
 
-    @QueryProjection
-    public PostResponseDto(Long id, String title, String content, PostStatus status, String writtenBy, boolean isBookmarked, int commentCount) {
+    public PostResponseDto(Long id, String title, String content, PostStatus status, String writtenBy, boolean isBookmarked, int commentCount, List<EmojiResponseDto> emojiResponsDtos) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -31,10 +28,10 @@ public class PostResponseDto {
         this.writtenBy = writtenBy;
         this.isBookmarked = isBookmarked;
         this.commentCount = commentCount;
-//        this.emojis = emojis;
+        this.emojiResponsDtos = emojiResponsDtos;
     }
 
-    public static PostResponseDto of(Long id, String title, String content, PostStatus status, String writtenBy, boolean isBookmarked, int commentCount) {
+    public static PostResponseDto of(Long id, String title, String content, PostStatus status, String writtenBy, boolean isBookmarked, int commentCount, List<EmojiResponseDto> emojiResponsDtos) {
         return new PostResponseDto(
             id,
             title,
@@ -42,7 +39,8 @@ public class PostResponseDto {
             status,
             writtenBy,
             isBookmarked,
-            commentCount
+            commentCount,
+            emojiResponsDtos
         );
     }
 
@@ -54,7 +52,8 @@ public class PostResponseDto {
             entity.getStatus(),
             entity.getCreatedBy(),
             entity.isBookmarked(),
-            entity.getCommentEntities().size()
+            entity.getCommentEntities().size(),
+            EmojiResponseDto.from(entity.getEmojiReactionEntities())
         );
     }
 

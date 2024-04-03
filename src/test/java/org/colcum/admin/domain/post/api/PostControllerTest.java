@@ -1,5 +1,6 @@
 package org.colcum.admin.domain.post.api;
 
+import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.application.PostService;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.argThat;
@@ -48,7 +50,9 @@ class PostControllerTest extends AbstractRestDocsTest {
                 PostStatus.IN_PROGRESS,
                 "tester",
                 false,
-                3)
+                3,
+                List.of(EmojiResponseDto.of("\uD83D\uDE00", 1, List.of("tester2")))
+            )
         );
         PageRequest pageRequest = PageRequest.of(0, 10);
         Page<PostResponseDto> page = new PageImpl<>(dtos, pageRequest, dtos.size());
@@ -104,7 +108,9 @@ class PostControllerTest extends AbstractRestDocsTest {
                 PostStatus.IN_PROGRESS,
                 "tester",
                 false,
-                3)
+                3,
+                List.of(EmojiResponseDto.of("\uD83D\uDE00", 1, List.of("tester2")))
+            )
         );
         PageRequest pageRequest = PageRequest.of(0, 10);
         Page<PostResponseDto> page = new PageImpl<>(dtos, pageRequest, dtos.size());
