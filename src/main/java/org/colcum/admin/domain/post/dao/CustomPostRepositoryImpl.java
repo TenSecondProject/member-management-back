@@ -1,18 +1,14 @@
 package org.colcum.admin.domain.post.dao;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Expression;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
-import org.colcum.admin.domain.post.api.dto.QPostResponseDto;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Component;
 
@@ -29,7 +25,6 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
 
     private final JPAQueryFactory queryFactory;
 
-    @EntityGraph(attributePaths = {"commentEntities", "emojiReactionEntities"})
     public Page<PostResponseDto> search(PostSearchCondition condition, Pageable pageable) {
         BooleanBuilder builder = getBooleanBuilder(condition);
 
@@ -37,22 +32,23 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             .select(postEntity)
             .from(postEntity)
             .leftJoin(postEntity.commentEntities, commentEntity)
-            .leftJoin(postEntity.emojiReactionEntities, emojiReactionEntity)
+            .leftJoin(postEntity.emojiReactionEntities, emojiReactionEntity).fetchJoin()
             .where(builder)
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .groupBy(postEntity.id)
             .fetch();
 
-        List<PostResponseDto> dtos = fetch
-            .forEach();
+        List<PostResponseDto> dtos = fetch.stream()
+            .map(PostResponseDto::from)
+            .toList();
 
         JPAQuery<Long> count = queryFactory
             .select(postEntity.count())
             .from(postEntity)
             .where(builder);
 
-        return PageableExecutionUtils.getPage(fetch, pageable, count::fetchCount);
+        return PageableExecutionUtils.getPage(dtos, pageable, count::fetchCount);
     }
 
     private static BooleanBuilder getBooleanBuilder(PostSearchCondition condition) {
