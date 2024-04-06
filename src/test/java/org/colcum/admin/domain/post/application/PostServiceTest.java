@@ -1,5 +1,8 @@
 package org.colcum.admin.domain.post.application;
 
+import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
+import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.dao.PostRepository;
 import org.colcum.admin.domain.post.domain.PostEntity;
@@ -10,19 +13,15 @@ import org.colcum.admin.domain.user.dao.UserRepository;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.util.Fixture;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -258,6 +257,31 @@ class PostServiceTest {
         assertThat(nothing.getContent().size()).isEqualTo(0);
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
         assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1), PostResponseDto.from(post2), PostResponseDto.from(post3));
+    }
+
+    @Test
+    @DisplayName("게시글 상세페이지를 조회한다.")
+    void inquirePostDetail() {
+        // given
+        PostEntity post = Fixture.createFixturePost("title1", "content1", user);
+        post = postRepository.save(post);
+
+        // when
+        PostDetailResponseDto response = postService.inquirePostDetail(post.getId());
+
+        // then
+        assertThat(post.getId()).isEqualTo(response.getId());
+        assertThat(post.getTitle()).isEqualTo(response.getTitle());
+        assertThat(post.getContent()).isEqualTo(response.getContent());
+        assertThat(post.getCategory()).isEqualTo(response.getCategory());
+        assertThat(post.getStatus()).isEqualTo(response.getStatus());
+        assertThat(post.isBookmarked()).isEqualTo(response.isBookmarked());
+        assertThat(post.getExpiredDate()).isEqualTo(response.getExpiredDate());
+        assertThat(post.getCreatedBy()).isEqualTo(response.getWrittenBy());
+        assertThat(post.getUser().getName()).isEqualTo(response.getUsername());
+        assertThat(post.isBookmarked()).isEqualTo(response.isBookmarked());
+        assertThat(post.getCommentEntities().stream().map(CommentResponseDto::from).toList()).isEqualTo(response.getCommentResponseDtos());
+        assertThat(EmojiResponseDto.from(post.getEmojiReactionEntities())).isEqualTo(response.getEmojiResponseDtos());
     }
 
 }

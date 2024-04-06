@@ -1,6 +1,5 @@
 package org.colcum.admin.domain.post.dao;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
 import org.colcum.admin.domain.post.domain.CommentEntity;
@@ -24,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.colcum.admin.global.util.Fixture.createFixtureComment;
@@ -87,6 +87,28 @@ class PostRepositoryTest {
         assertThat(posts.getContent().size()).isEqualTo(3);
         assertThat(posts.getSize()).isEqualTo(10);
         assertThat(posts.getContent()).contains(PostResponseDto.from(post1), PostResponseDto.from(post2), PostResponseDto.from(post3));
+    }
+
+    @Test
+    @DisplayName("게시글 상세 페이지를 조회한다.")
+    void inquirePostDetail() {
+        // given
+        PostEntity post = Fixture.createFixturePost("title", "content1", user);
+        post = postRepository.save(post);
+
+        CommentEntity commentEntity = createFixtureComment(user, post, "commentContent1");
+        post.addComment(commentEntity);
+        commentRepository.save(commentEntity);
+
+        EmojiReactionEntity emojiReactionEntity = createFixtureEmoji(user, post, "\uD83D\uDE00");
+        post.addEmoji(emojiReactionEntity);
+        emojiReactionRepository.save(emojiReactionEntity);
+
+        // when
+        PostEntity result = postRepository.findById(post.getId()).orElseThrow();
+
+        // then
+        assertThat(result).isEqualTo(post);
     }
 
 }
