@@ -1,6 +1,7 @@
 package org.colcum.admin.domain.post.api;
 
 import lombok.RequiredArgsConstructor;
+import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.application.PostService;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
@@ -21,6 +22,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,6 +51,20 @@ public class PostController {
         }
         Page<PostResponseDto> responses = postService.findByCriteria(searchType, searchValue, categories, statuses, pageable);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
+    }
+
+    @GetMapping
+    @RequestMapping("/{postId}")
+    public ApiResponse<PostDetailResponseDto> inquirePostDetail(
+        @PathVariable(name = "postId", required = true) Long postId,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        PostDetailResponseDto response = postService.inquirePostDetail(postId);
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", response);
     }
 
 }

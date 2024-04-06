@@ -1,6 +1,8 @@
 package org.colcum.admin.domain.post.api;
 
+import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.application.PostService;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
@@ -19,6 +21,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -150,6 +155,60 @@ class PostControllerTest extends AbstractRestDocsTest {
             .andDo(document("posts"))
             .andDo(print())
             .andReturn();
+    }
+
+    @Test
+    @DisplayName("게시글 상세 페이지를 조회한다")
+    @WithMockJwtAuthentication
+    void inquirePostDetail() throws Exception {
+        Long postId = 1L;
+        LocalDateTime now = LocalDateTime.now();
+        // given
+        PostDetailResponseDto dtos = PostDetailResponseDto.of(
+            postId,
+            "title",
+            "content",
+            PostCategory.ANNOUNCEMENT,
+            PostStatus.COMPLETE,
+            false,
+            now.toLocalDate(),
+            "tester",
+            now,
+            "tester",
+            List.of(CommentResponseDto.of("commentTester", now.toLocalDate(), "commentContent")),
+            List.of(EmojiResponseDto.of("\uD83D\uDE00", 1, List.of("tester2")))
+        );
+
+        // when
+        when(postService.inquirePostDetail(postId)).thenReturn(dtos);
+
+        // then
+        this.mockMvc
+            .perform(
+                get("/api/v1/posts/{postId}", postId).accept(MediaType.APPLICATION_JSON)
+            )
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.data.id").value(postId),
+                jsonPath("$.data.title").value("title"),
+                jsonPath("$.data.content").value("content"),
+                jsonPath("$.data.category").value(PostCategory.ANNOUNCEMENT.name()),
+                jsonPath("$.data.status").value(PostStatus.COMPLETE.name()),
+                jsonPath("$.data.bookmarked").value(false),
+                jsonPath("$.data.expiredDate").value(now.format(DateTimeFormatter.ofPattern("yy/MM/dd"))),
+                jsonPath("$.data.writtenBy").value("tester"),
+                jsonPath("$.data.createdAt").value(now.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"))),
+                jsonPath("$.data.username").value("tester"),
+                jsonPath("$.data.commentResponseDtos[0].writtenBy").value("commentTester"),
+                jsonPath("$.data.commentResponseDtos[0].writtenDate").value(now.format(DateTimeFormatter.ofPattern("yy/MM/dd"))),
+                jsonPath("$.data.commentResponseDtos[0].content").value("commentContent"),
+                jsonPath("$.data.emojiResponseDtos[0].emoji").value("\uD83D\uDE00"),
+                jsonPath("$.data.emojiResponseDtos[0].totalCount").value(1),
+                jsonPath("$.data.emojiResponseDtos[0].usernames[0]").value("tester2")
+            )
+            .andDo(document("posts"))
+            .andDo(print());
+
     }
 
 }
