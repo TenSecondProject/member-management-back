@@ -3,6 +3,7 @@ package org.colcum.admin.global.auth.config;
 import lombok.RequiredArgsConstructor;
 import org.colcum.admin.domain.user.domain.UserType;
 import org.colcum.admin.global.auth.api.AuthenticationSuccessHandler;
+import org.colcum.admin.global.auth.api.LoggingFilter;
 import org.colcum.admin.global.auth.application.UserAuthenticationProvider;
 import org.colcum.admin.global.auth.application.UserAuthenticationService;
 import org.colcum.admin.global.auth.jwt.Jwt;
@@ -22,6 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -37,14 +39,17 @@ public class SecurityConfiguration {
             .cors(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(
                 request -> request
+                    .requestMatchers("/login").permitAll()
+                    .requestMatchers("/docs/index").permitAll()
                     .requestMatchers("/api/**").hasRole(UserType.STAFF.name())
                     .anyRequest().authenticated()
             )
             .addFilterBefore(new JwtAuthenticationFilter(jwt()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new LoggingFilter(), SecurityContextHolderFilter.class)
             .formLogin(
                 form -> form
                     .permitAll()
-                    .successHandler(new AuthenticationSuccessHandler(jwt(), userAuthenticationService))
+                    .successHandler(new AuthenticationSuccessHandler(jwt()))
             );
         return http.build();
     }
