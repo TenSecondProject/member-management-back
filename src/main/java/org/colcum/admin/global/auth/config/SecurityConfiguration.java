@@ -44,7 +44,7 @@ public class SecurityConfiguration {
                     .requestMatchers("/api/**").hasRole(UserType.STAFF.name())
                     .anyRequest().authenticated()
             )
-            .addFilterBefore(new JwtAuthenticationFilter(jwt()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new JwtAuthenticationFilter(jwt(), userAuthenticationService), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new LoggingFilter(), SecurityContextHolderFilter.class)
             .formLogin(
                 form -> form
@@ -63,7 +63,7 @@ public class SecurityConfiguration {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwt());
+        return new JwtAuthenticationFilter(jwt(), userAuthenticationService);
     }
 
     @Bean

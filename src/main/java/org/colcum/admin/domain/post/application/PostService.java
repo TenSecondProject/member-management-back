@@ -1,6 +1,7 @@
 package org.colcum.admin.domain.post.application;
 
 import lombok.RequiredArgsConstructor;
+import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
@@ -10,13 +11,11 @@ import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,12 +31,17 @@ public class PostService {
         );
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public PostDetailResponseDto inquirePostDetail(Long id) {
         PostEntity post = postRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("대상 게시글은 존재하지 않습니다."));
 
         return PostDetailResponseDto.from(post);
+    }
+
+    @Transactional
+    public void createPost(PostCreateDto dto, Long userId) {
+
     }
 
 }

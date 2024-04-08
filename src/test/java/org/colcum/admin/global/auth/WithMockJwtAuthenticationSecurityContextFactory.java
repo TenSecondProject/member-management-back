@@ -1,5 +1,7 @@
 package org.colcum.admin.global.auth;
 
+import org.colcum.admin.domain.user.domain.Branch;
+import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.auth.jwt.JwtAuthentication;
 import org.colcum.admin.global.auth.jwt.JwtAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -14,9 +16,10 @@ public class WithMockJwtAuthenticationSecurityContextFactory implements
     @Override
     public SecurityContext createSecurityContext(WithMockJwtAuthentication annotation) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
+        UserEntity user = new UserEntity("tester@gmail.com", "1234", "title", Branch.JONGRO);
         JwtAuthenticationToken authentication =
             new JwtAuthenticationToken(
-                new JwtAuthentication(annotation.token(), annotation.id()),
+                new JwtAuthentication(annotation.token(), user),
                 null,
                 createAuthorityList(annotation.role())
             );

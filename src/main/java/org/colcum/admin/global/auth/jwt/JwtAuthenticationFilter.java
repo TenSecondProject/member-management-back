@@ -7,6 +7,8 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.colcum.admin.domain.user.domain.UserEntity;
+import org.colcum.admin.global.auth.application.UserAuthenticationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,8 +33,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final Jwt jwt;
 
-    public JwtAuthenticationFilter(Jwt jwt) {
+    private final UserAuthenticationService userAuthenticationService;
+
+    public JwtAuthenticationFilter(Jwt jwt, UserAuthenticationService userAuthenticationService) {
         this.jwt = jwt;
+        this.userAuthenticationService = userAuthenticationService;
     }
 
     @Override
@@ -48,8 +53,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     List<GrantedAuthority> authorities = getAuthorities(claims);
 
                     if (userId != null && authorities.size() > 0) {
+                        UserEntity userEntity = userAuthenticationService.loadUserById(userId);
+
                         JwtAuthenticationToken authentication
-                            = new JwtAuthenticationToken(new JwtAuthentication(token, userId), null, authorities);
+                            = new JwtAuthenticationToken(new JwtAuthentication(token, userEntity), null, authorities);
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     }
