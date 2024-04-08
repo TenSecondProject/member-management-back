@@ -40,6 +40,7 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(
                 request -> request
                     .requestMatchers("/login").permitAll()
+                    .requestMatchers("/docs/index").permitAll()
                     .requestMatchers("/api/**").hasRole(UserType.STAFF.name())
                     .anyRequest().authenticated()
             )

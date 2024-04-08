@@ -20,17 +20,19 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -152,8 +154,15 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.data.content[0].commentCount").value(3),
                 jsonPath("$.data.content[0].bookmarked").value(false)
             )
-            .andDo(document("posts"))
             .andDo(print())
+            .andDo(document("posts", queryParameters(
+                parameterWithName("searchType").description("검색의 유형으로, Title, content, writtenBy가 존재"),
+                parameterWithName("searchValue").description("검색에 쓰일 내용"),
+                parameterWithName("postStatus").description("게시글의 상태, Complete, InProgress, UnComplete가 존재"),
+                parameterWithName("postCategory").description("게시글의 종류, Announcement, Delivery, Etc가 존재"),
+                parameterWithName("page").description("Page 번호"),
+                parameterWithName("size").description("Page size")
+            )))
             .andReturn();
     }
 
@@ -206,9 +215,10 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.data.emojiResponseDtos[0].totalCount").value(1),
                 jsonPath("$.data.emojiResponseDtos[0].usernames[0]").value("tester2")
             )
-            .andDo(document("posts"))
+            .andDo(document("posts", pathParameters(
+                parameterWithName("postId").description("게시글의 ID")
+            )))
             .andDo(print());
-
     }
 
 }
