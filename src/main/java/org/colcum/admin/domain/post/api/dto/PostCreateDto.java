@@ -1,0 +1,36 @@
+package org.colcum.admin.domain.post.api.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.colcum.admin.domain.post.domain.PostEntity;
+import org.colcum.admin.domain.post.domain.type.PostCategory;
+import org.colcum.admin.domain.post.domain.type.PostStatus;
+import org.colcum.admin.domain.user.domain.UserEntity;
+
+import java.time.LocalDate;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class PostCreateDto {
+
+    private String title;
+    private String content;
+    private PostCategory category;
+    private PostStatus status;
+    private LocalDate expiredDate;
+
+    public PostEntity toEntity(UserEntity user) {
+        return new PostEntity(
+            title,
+            content,
+            category,
+            status,
+            false,
+            expiredDate,
+            user
+        );
+    }
+
+}

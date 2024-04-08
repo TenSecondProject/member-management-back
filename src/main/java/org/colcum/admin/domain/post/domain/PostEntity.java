@@ -65,6 +65,16 @@ public class PostEntity extends BaseEntity {
     @ToString.Exclude
     private List<EmojiReactionEntity> emojiReactionEntities = new ArrayList<>();
 
+    public PostEntity(String title, String content, PostCategory category, PostStatus status, boolean isBookmarked, LocalDate expiredDate, UserEntity user) {
+        this.title = title;
+        this.content = content;
+        this.category = category;
+        this.status = status;
+        this.isBookmarked = isBookmarked;
+        this.expiredDate = expiredDate;
+        this.user = user;
+    }
+
     public void addComment(CommentEntity commentEntity) {
         this.commentEntities.add(commentEntity);
         if (!commentEntity.getPostEntity().equals(this)) {

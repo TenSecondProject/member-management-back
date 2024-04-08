@@ -31,4 +31,10 @@ public class UserAuthenticationService implements UserDetailsService {
         return new UserContext(user, roles);
     }
 
+    public UserEntity loadUserById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
+            () -> new UsernameNotFoundException("해당 유저는 존재하지 않습니다.")
+        );
+    }
+
 }

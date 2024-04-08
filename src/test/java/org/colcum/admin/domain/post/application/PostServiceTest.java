@@ -2,8 +2,10 @@ package org.colcum.admin.domain.post.application;
 
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
 import org.colcum.admin.domain.post.dao.PostRepository;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
@@ -282,6 +284,24 @@ class PostServiceTest {
         assertThat(post.isBookmarked()).isEqualTo(response.isBookmarked());
         assertThat(post.getCommentEntities().stream().map(CommentResponseDto::from).toList()).isEqualTo(response.getCommentResponseDtos());
         assertThat(EmojiResponseDto.from(post.getEmojiReactionEntities())).isEqualTo(response.getEmojiResponseDtos());
+    }
+
+    @Test
+    @DisplayName("게시글을 생성한다.")
+    void createPost() {
+        // given
+        PostCreateDto dto = new PostCreateDto("title", "content", PostCategory.ANNOUNCEMENT, PostStatus.COMPLETE, null);
+
+        // when
+        PostEntity result = postService.createPost(dto, user);
+
+        // then
+        assertThat(result.getTitle()).isEqualTo(dto.getTitle());
+        assertThat(result.getContent()).isEqualTo(dto.getContent());
+        assertThat(result.getCategory()).isEqualTo(dto.getCategory());
+        assertThat(result.getStatus()).isEqualTo(dto.getStatus());
+        assertThat(result.getExpiredDate()).isEqualTo(dto.getExpiredDate());
+        assertThat(result.getUser()).isEqualTo(user);
     }
 
 }

@@ -10,6 +10,7 @@ import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
+import org.colcum.admin.domain.user.domain.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -40,8 +41,9 @@ public class PostService {
     }
 
     @Transactional
-    public void createPost(PostCreateDto dto, Long userId) {
-
+    public PostEntity createPost(PostCreateDto dto, UserEntity user) {
+        PostEntity postEntity = dto.toEntity(user);
+        return postRepository.save(postEntity);
     }
 
 }
