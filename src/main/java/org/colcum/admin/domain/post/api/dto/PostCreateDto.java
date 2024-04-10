@@ -1,5 +1,6 @@
 package org.colcum.admin.domain.post.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ public class PostCreateDto {
     private String content;
     private PostCategory category;
     private PostStatus status;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
     private LocalDate expiredDate;
 
     public PostEntity toEntity(UserEntity user) {

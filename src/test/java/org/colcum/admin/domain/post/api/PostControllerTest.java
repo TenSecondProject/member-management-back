@@ -2,15 +2,18 @@ package org.colcum.admin.domain.post.api;
 
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.application.PostService;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
+import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.auth.WithMockJwtAuthentication;
 import org.colcum.admin.global.common.AbstractRestDocsTest;
 import org.colcum.admin.global.common.IsNullOrType;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,17 +22,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static org.colcum.admin.global.util.Fixture.createFixtureUser;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
@@ -218,6 +225,41 @@ class PostControllerTest extends AbstractRestDocsTest {
             .andDo(document("posts", pathParameters(
                 parameterWithName("postId").description("게시글의 ID")
             )))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("게시글을 생성한다")
+    @WithMockJwtAuthentication
+    void createPost() throws Exception {
+        // given
+        PostCreateDto dto = new PostCreateDto(
+            "title",
+            "content",
+            PostCategory.ANNOUNCEMENT,
+            PostStatus.IN_PROGRESS,
+            LocalDate.now()
+        );
+        String serialized = "{\"title\": \"title\", \"content\": \"content\", \"category\": \"ANNOUNCEMENT\", \"status\": \"IN_PROGRESS\", \"expiredDate\": \"2024-04-10\"}";
+
+
+        UserEntity user = createFixtureUser();
+
+        // when
+        when(postService.createPost(dto, user)).thenReturn(null);
+
+        // then
+        this.mockMvc
+            .perform(
+                post("/api/v1/posts")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(serialized))
+            .andExpectAll(
+                status().isCreated(),
+                jsonPath("$.statusCode").value(HttpStatus.CREATED.value()),
+                jsonPath("$.message").value("created"),
+                jsonPath("$.data").value(Matchers.nullValue())
+            )
             .andDo(print());
     }
 
