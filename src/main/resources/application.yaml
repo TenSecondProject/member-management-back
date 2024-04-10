@@ -30,7 +30,6 @@ logging:
         jdbc:
           bind: trace
 
-
 jwt:
   issuer: 10Second
   client-secret: ${JWT_SECRET}
@@ -64,6 +63,7 @@ logging:
       type:
         descriptor:
           sql: trace
+    org.springframework.security: DEBUG
 
 ---
 spring:
