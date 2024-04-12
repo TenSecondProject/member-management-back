@@ -14,10 +14,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.colcum.admin.domain.post.domain.QCommentEntity.commentEntity;
 import static org.colcum.admin.domain.post.domain.QEmojiReactionEntity.emojiReactionEntity;
 import static org.colcum.admin.domain.post.domain.QPostEntity.postEntity;
+import static org.colcum.admin.domain.user.domain.QUserEntity.userEntity;
 
 @Component
 @RequiredArgsConstructor
@@ -25,6 +27,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
 
     private final JPAQueryFactory queryFactory;
 
+    @Override
     public Page<PostResponseDto> search(PostSearchCondition condition, Pageable pageable) {
         BooleanBuilder builder = getBooleanBuilder(condition);
 
@@ -49,6 +52,16 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             .where(builder);
 
         return PageableExecutionUtils.getPage(dtos, pageable, count::fetchCount);
+    }
+
+    @Override
+    public Optional<PostEntity> findByIdWithUser(Long id) {
+        return Optional.ofNullable(queryFactory
+            .selectFrom(postEntity)
+            .innerJoin(postEntity.user, userEntity)
+            .fetchJoin()
+            .where(postEntity.id.eq(id))
+            .fetchOne());
     }
 
     private static BooleanBuilder getBooleanBuilder(PostSearchCondition condition) {

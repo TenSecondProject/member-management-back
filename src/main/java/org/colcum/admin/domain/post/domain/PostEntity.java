@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.user.domain.UserEntity;
@@ -121,6 +122,14 @@ public class PostEntity extends BaseEntity {
 
     public void setUser(UserEntity user) {
         this.user = user;
+    }
+
+    public PostEntity update(PostUpdateDto dto) {
+        this.title = dto.getTitle();
+        this.content = dto.getContent();
+        this.status = dto.getStatus();
+        this.expiredDate = dto.getExpiredDate();
+        return this;
     }
 
 }

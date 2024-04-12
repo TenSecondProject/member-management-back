@@ -25,6 +25,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
@@ -317,20 +319,19 @@ class PostServiceTest {
         PostEntity post = Fixture.createFixturePost("title1", "content1", user);
         post = postRepository.save(post);
 
-        PostUpdateDto requestDto = new PostUpdateDto();
+        PostUpdateDto requestDto = new PostUpdateDto(post.getId(), "updatedTitle", "updatedContent", PostStatus.COMPLETE, LocalDateTime.now());
 
         // when
         PostUpdateDto responseDto = postService.updatePost(requestDto, user);
         PostEntity updatedPost = postRepository.findById(post.getId()).orElseThrow(RuntimeException::new);
 
         // then
-        assertThat(responseDto).isEqualTo(updatedPost.getTitle());
-        assertThat(responseDto).isEqualTo(updatedPost.getContent());
-        assertThat(responseDto).isEqualTo(updatedPost.getCategory());
-        assertThat(responseDto).isEqualTo(updatedPost.getStatus());
-        assertThat(responseDto).isEqualTo(updatedPost.isBookmarked());
-        assertThat(responseDto).isEqualTo(updatedPost.getExpiredDate());
-        assertThat(responseDto).isEqualTo(updatedPost.getExpiredDate());
+        assertThat(responseDto.getId()).isEqualTo(updatedPost.getId());
+        assertThat(responseDto.getTitle()).isEqualTo(updatedPost.getTitle());
+        assertThat(responseDto.getContent()).isEqualTo(updatedPost.getContent());
+        assertThat(responseDto.getStatus()).isEqualTo(updatedPost.getStatus());
+        assertThat(responseDto.getExpiredDate().truncatedTo(ChronoUnit.MILLIS))
+            .isEqualTo(updatedPost.getExpiredDate().truncatedTo(ChronoUnit.MILLIS));
     }
 
 
