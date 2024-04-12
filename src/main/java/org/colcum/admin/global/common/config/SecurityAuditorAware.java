@@ -1,5 +1,6 @@
 package org.colcum.admin.global.common.config;
 
+import org.colcum.admin.global.auth.jwt.JwtAuthentication;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,7 +15,8 @@ public class SecurityAuditorAware implements AuditorAware<String> {
         if (authentication == null || !authentication.isAuthenticated()) {
             return Optional.of("unknown");
         }
-        return Optional.ofNullable(authentication.getName());
+        JwtAuthentication principal = (JwtAuthentication) authentication.getPrincipal();
+        return Optional.ofNullable(String.valueOf(principal.userEntity.getId()));
     }
 
 }

@@ -73,7 +73,7 @@ public class PostDetailResponseDto {
             post.getStatus(),
             post.isBookmarked(),
             post.getExpiredDate(),
-            post.getCreatedBy(),
+            post.getUser().getName(),
             post.getCreatedAt(),
             post.getUser().getName(),
             post.getCommentEntities().stream().map(CommentResponseDto::from).toList(),

@@ -1,6 +1,7 @@
 package org.colcum.admin.domain.post.api;
 
 import lombok.RequiredArgsConstructor;
+import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.application.PostService;
@@ -19,6 +20,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -68,13 +70,13 @@ public class PostController {
     @RequestMapping
     @ResponseStatus(value = HttpStatus.CREATED)
     public ApiResponse<String> createPost(
-//        @RequestBody PostCreateDto dto,
+        @RequestBody PostCreateDto dto,
         @AuthenticationPrincipal JwtAuthentication authentication
     ) {
         if (Objects.isNull(authentication)) {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
-//        postService.createPost(dto, authentication.userEntity);
+        postService.createPost(dto, authentication.userEntity);
         return new ApiResponse<>(HttpStatus.CREATED.value(), "created", null);
     }
 
