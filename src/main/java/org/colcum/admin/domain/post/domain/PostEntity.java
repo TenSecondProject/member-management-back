@@ -25,6 +25,7 @@ import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.common.domain.BaseEntity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,7 +58,7 @@ public class PostEntity extends BaseEntity {
     @Column(nullable = false)
     private boolean isBookmarked;
 
-    private LocalDate expiredDate;
+    private LocalDateTime expiredDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
@@ -72,7 +73,19 @@ public class PostEntity extends BaseEntity {
     @ToString.Exclude
     private List<EmojiReactionEntity> emojiReactionEntities = new ArrayList<>();
 
-    public PostEntity(String title, String content, PostCategory category, PostStatus status, boolean isBookmarked, LocalDate expiredDate, UserEntity user) {
+    public PostEntity(String title, String content, PostCategory category, PostStatus status, boolean isBookmarked, LocalDateTime expiredDate, UserEntity user, List<CommentEntity> commentEntities, List<EmojiReactionEntity> emojiReactionEntities) {
+        this.title = title;
+        this.content = content;
+        this.category = category;
+        this.status = status;
+        this.isBookmarked = isBookmarked;
+        this.expiredDate = expiredDate;
+        this.user = user;
+        this.commentEntities = commentEntities;
+        this.emojiReactionEntities = emojiReactionEntities;
+    }
+
+    public PostEntity(String title, String content, PostCategory category, PostStatus status, boolean isBookmarked, LocalDateTime expiredDate, UserEntity user) {
         this.title = title;
         this.content = content;
         this.category = category;

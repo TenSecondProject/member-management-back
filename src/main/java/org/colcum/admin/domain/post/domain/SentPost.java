@@ -22,7 +22,6 @@ import org.colcum.admin.global.common.domain.BaseEntity;
 @Table(name = "sent_post")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@AllArgsConstructor
 @ToString
 public class SentPost extends BaseEntity {
 
@@ -37,5 +36,10 @@ public class SentPost extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "receiver_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private UserEntity receiver;
+
+    public SentPost(PostEntity postEntity, UserEntity receiver) {
+        this.postEntity = postEntity;
+        this.receiver = receiver;
+    }
 
 }

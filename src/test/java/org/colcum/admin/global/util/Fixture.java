@@ -9,6 +9,7 @@ import org.colcum.admin.domain.user.domain.Branch;
 import org.colcum.admin.domain.user.domain.UserEntity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class Fixture {
         return createFixturePost(title, content, PostCategory.ANNOUNCEMENT, PostStatus.UNCOMPLETED, false, null, user, new ArrayList<>(), new ArrayList<>());
     }
 
-    public static PostEntity createFixturePost(String title, String content, PostCategory postCategory, PostStatus postStatus, boolean isBookmarked, LocalDate expiredDate, UserEntity user, List<CommentEntity> comments, List<EmojiReactionEntity> emojis) {
+    public static PostEntity createFixturePost(String title, String content, PostCategory postCategory, PostStatus postStatus, boolean isBookmarked, LocalDateTime expiredDate, UserEntity user, List<CommentEntity> comments, List<EmojiReactionEntity> emojis) {
         return new PostEntity(title, content, postCategory, postStatus, isBookmarked, expiredDate, user, comments, emojis);
     }
 

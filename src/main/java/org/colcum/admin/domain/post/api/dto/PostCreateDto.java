@@ -10,6 +10,7 @@ import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.user.domain.UserEntity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -20,8 +21,8 @@ public class PostCreateDto {
     private String content;
     private PostCategory category;
     private PostStatus status;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-    private LocalDate expiredDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+    private LocalDateTime expiredDate;
 
     public PostEntity toEntity(UserEntity user) {
         return new PostEntity(

@@ -24,13 +24,12 @@ public class PostDetailResponseDto {
     private PostStatus status;
     private boolean isBookmarked;
 
-    @JsonFormat(pattern = "yy/MM/dd", timezone = "Asia/Seoul")
-    private LocalDate expiredDate;
+    @JsonFormat(pattern = "yy/MM/dd HH:mm", timezone = "Asia/Seoul")
+    private LocalDateTime expiredDate;
     private String writtenBy;
 
     @JsonFormat(pattern = "yyyy.MM.dd HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
-    private String username;
     private List<CommentResponseDto> commentResponseDtos;
     private List<EmojiResponseDto> emojiResponseDtos;
 
@@ -41,10 +40,9 @@ public class PostDetailResponseDto {
         PostCategory category,
         PostStatus status,
         boolean isBookmarked,
-        LocalDate expiredDate,
+        LocalDateTime expiredDate,
         String writtenBy,
         LocalDateTime createdAt,
-        String username,
         List<CommentResponseDto> commentResponseDtos,
         List<EmojiResponseDto> emojiResponseDtos
     ) {
@@ -58,7 +56,6 @@ public class PostDetailResponseDto {
             expiredDate,
             writtenBy,
             createdAt,
-            username,
             commentResponseDtos,
             emojiResponseDtos
         );
@@ -75,7 +72,6 @@ public class PostDetailResponseDto {
             post.getExpiredDate(),
             post.getUser().getName(),
             post.getCreatedAt(),
-            post.getUser().getName(),
             post.getCommentEntities().stream().map(CommentResponseDto::from).toList(),
             EmojiResponseDto.from(post.getEmojiReactionEntities())
         );

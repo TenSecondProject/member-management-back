@@ -21,7 +21,6 @@ import org.colcum.admin.global.common.domain.BaseEntity;
 @Entity
 @Table(name = "comment")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @ToString
 @Getter
 public class CommentEntity extends BaseEntity {
@@ -40,6 +39,12 @@ public class CommentEntity extends BaseEntity {
 
     @Column(length = 500, nullable = false)
     private String content;
+
+    public CommentEntity(UserEntity user, PostEntity postEntity, String content) {
+        this.user = user;
+        this.postEntity = postEntity;
+        this.content = content;
+    }
 
     public void setPostEntity(PostEntity postEntity) {
         this.postEntity = postEntity;

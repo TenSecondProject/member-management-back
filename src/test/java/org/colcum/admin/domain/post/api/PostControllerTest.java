@@ -187,10 +187,9 @@ class PostControllerTest extends AbstractRestDocsTest {
             PostCategory.ANNOUNCEMENT,
             PostStatus.COMPLETE,
             false,
-            now.toLocalDate(),
-            "tester",
             now,
             "tester",
+            now,
             List.of(CommentResponseDto.of("commentTester", now.toLocalDate(), "commentContent")),
             List.of(EmojiResponseDto.of("\uD83D\uDE00", 1, List.of("tester2")))
         );
@@ -211,10 +210,9 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.data.category").value(PostCategory.ANNOUNCEMENT.name()),
                 jsonPath("$.data.status").value(PostStatus.COMPLETE.name()),
                 jsonPath("$.data.bookmarked").value(false),
-                jsonPath("$.data.expiredDate").value(now.format(DateTimeFormatter.ofPattern("yy/MM/dd"))),
+                jsonPath("$.data.expiredDate").value(now.format(DateTimeFormatter.ofPattern("yy/MM/dd HH:mm"))),
                 jsonPath("$.data.writtenBy").value("tester"),
                 jsonPath("$.data.createdAt").value(now.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"))),
-                jsonPath("$.data.username").value("tester"),
                 jsonPath("$.data.commentResponseDtos[0].writtenBy").value("commentTester"),
                 jsonPath("$.data.commentResponseDtos[0].writtenDate").value(now.format(DateTimeFormatter.ofPattern("yy/MM/dd"))),
                 jsonPath("$.data.commentResponseDtos[0].content").value("commentContent"),
@@ -238,9 +236,9 @@ class PostControllerTest extends AbstractRestDocsTest {
             "content",
             PostCategory.ANNOUNCEMENT,
             PostStatus.IN_PROGRESS,
-            LocalDate.now()
+            LocalDateTime.now()
         );
-        String serialized = "{\"title\": \"title\", \"content\": \"content\", \"category\": \"ANNOUNCEMENT\", \"status\": \"IN_PROGRESS\", \"expiredDate\": \"2024-04-10\"}";
+        String serialized = "{\"title\": \"title\", \"content\": \"content\", \"category\": \"ANNOUNCEMENT\", \"status\": \"IN_PROGRESS\", \"expiredDate\": \"2024-04-10 22:10\"}";
 
 
         UserEntity user = createFixtureUser();

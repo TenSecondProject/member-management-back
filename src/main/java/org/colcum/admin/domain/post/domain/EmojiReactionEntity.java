@@ -22,7 +22,6 @@ import org.colcum.admin.global.common.domain.BaseEntity;
 @Table(name = "emoji_reaction")
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Getter
 public class EmojiReactionEntity extends BaseEntity {
 
@@ -40,6 +39,12 @@ public class EmojiReactionEntity extends BaseEntity {
 
     @Column(length = 10, nullable = false)
     private String content;
+
+    public EmojiReactionEntity(UserEntity user, PostEntity postEntity, String content) {
+        this.user = user;
+        this.postEntity = postEntity;
+        this.content = content;
+    }
 
     public void setPostEntity(PostEntity postEntity) {
         this.postEntity = postEntity;

@@ -5,7 +5,7 @@ import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
-import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
+import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.dao.PostRepository;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
@@ -13,6 +13,7 @@ import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.domain.user.dao.UserRepository;
 import org.colcum.admin.domain.user.domain.UserEntity;
+import org.colcum.admin.global.auth.WithMockJwtAuthentication;
 import org.colcum.admin.global.util.Fixture;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -124,7 +125,8 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, null, statuses, page);;
+        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, null, statuses, page);
+        ;
 
         // then
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
@@ -173,7 +175,8 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, categories, null, page);;
+        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, categories, null, page);
+        ;
 
         // then
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
@@ -198,8 +201,10 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, page);;
-        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, page);;
+        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, page);
+        ;
+        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, page);
+        ;
 
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
@@ -225,8 +230,10 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, page);;
-        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, page);;
+        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, page);
+        ;
+        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, page);
+        ;
 
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
@@ -279,8 +286,7 @@ class PostServiceTest {
         assertThat(post.getStatus()).isEqualTo(response.getStatus());
         assertThat(post.isBookmarked()).isEqualTo(response.isBookmarked());
         assertThat(post.getExpiredDate()).isEqualTo(response.getExpiredDate());
-        assertThat(post.getCreatedBy()).isEqualTo(response.getWrittenBy());
-        assertThat(post.getUser().getName()).isEqualTo(response.getUsername());
+        assertThat(post.getUser().getName()).isEqualTo(response.getWrittenBy());
         assertThat(post.isBookmarked()).isEqualTo(response.isBookmarked());
         assertThat(post.getCommentEntities().stream().map(CommentResponseDto::from).toList()).isEqualTo(response.getCommentResponseDtos());
         assertThat(EmojiResponseDto.from(post.getEmojiReactionEntities())).isEqualTo(response.getEmojiResponseDtos());
@@ -303,5 +309,30 @@ class PostServiceTest {
         assertThat(result.getExpiredDate()).isEqualTo(dto.getExpiredDate());
         assertThat(result.getUser()).isEqualTo(user);
     }
+
+    @Test
+    @DisplayName("게시글을 수정한다.")
+    void updatePost() {
+        // given
+        PostEntity post = Fixture.createFixturePost("title1", "content1", user);
+        post = postRepository.save(post);
+
+        PostUpdateDto requestDto = new PostUpdateDto();
+
+        // when
+        PostUpdateDto responseDto = postService.updatePost(requestDto, user);
+        PostEntity updatedPost = postRepository.findById(post.getId()).orElseThrow(RuntimeException::new);
+
+        // then
+        assertThat(responseDto).isEqualTo(updatedPost.getTitle());
+        assertThat(responseDto).isEqualTo(updatedPost.getContent());
+        assertThat(responseDto).isEqualTo(updatedPost.getCategory());
+        assertThat(responseDto).isEqualTo(updatedPost.getStatus());
+        assertThat(responseDto).isEqualTo(updatedPost.isBookmarked());
+        assertThat(responseDto).isEqualTo(updatedPost.getExpiredDate());
+        assertThat(responseDto).isEqualTo(updatedPost.getExpiredDate());
+    }
+
+
 
 }
