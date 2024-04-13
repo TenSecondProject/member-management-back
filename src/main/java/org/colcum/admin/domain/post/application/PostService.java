@@ -50,8 +50,8 @@ public class PostService {
     }
 
     @Transactional
-    public PostUpdateDto updatePost(PostUpdateDto dto, UserEntity user) {
-        PostEntity post = postRepository.findByIdWithUser(dto.getId()).orElseThrow(() -> {
+    public PostUpdateDto updatePost(Long postId, PostUpdateDto dto, UserEntity user) {
+        PostEntity post = postRepository.findByIdWithUser(postId).orElseThrow(() -> {
             throw new PostNotFoundException("해당 게시글을 찾을 수 없습니다.");
         });
 

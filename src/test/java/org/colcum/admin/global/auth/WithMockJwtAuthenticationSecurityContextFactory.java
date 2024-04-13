@@ -16,7 +16,7 @@ public class WithMockJwtAuthenticationSecurityContextFactory implements
     @Override
     public SecurityContext createSecurityContext(WithMockJwtAuthentication annotation) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
-        UserEntity user = new UserEntity("tester@gmail.com", "1234", "title", Branch.JONGRO);
+        UserEntity user = new UserEntity("tester@gmail.com", "1234", "tester", Branch.JONGRO);
         JwtAuthenticationToken authentication =
             new JwtAuthenticationToken(
                 new JwtAuthentication(annotation.token(), user),

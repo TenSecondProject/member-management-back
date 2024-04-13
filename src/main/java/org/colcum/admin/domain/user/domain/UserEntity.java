@@ -15,6 +15,8 @@ import lombok.ToString;
 import org.colcum.admin.global.common.domain.BaseEntity;
 import org.colcum.admin.global.util.EmailValidator;
 
+import java.util.Objects;
+
 @Entity
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -61,6 +63,25 @@ public class UserEntity extends BaseEntity {
 
     public void setType(UserType userType) {
         this.userType = userType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserEntity user = (UserEntity) o;
+
+        if (!Objects.equals(this.id, user.id)) return false;
+        if (!Objects.equals(email, user.email)) return false;
+        return Objects.equals(password, user.password);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = email != null ? email.hashCode() : 0;
+        result = 31 * result + (password != null ? password.hashCode() : 0);
+        return result;
     }
 
 }

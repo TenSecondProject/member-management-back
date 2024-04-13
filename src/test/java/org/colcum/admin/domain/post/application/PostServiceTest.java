@@ -318,22 +318,19 @@ class PostServiceTest {
         // given
         PostEntity post = Fixture.createFixturePost("title1", "content1", user);
         post = postRepository.save(post);
-
-        PostUpdateDto requestDto = new PostUpdateDto(post.getId(), "updatedTitle", "updatedContent", PostStatus.COMPLETE, LocalDateTime.now());
+        Long postId = post.getId();
+        PostUpdateDto requestDto = new PostUpdateDto("updatedTitle", "updatedContent", PostStatus.COMPLETE, LocalDateTime.now());
 
         // when
-        PostUpdateDto responseDto = postService.updatePost(requestDto, user);
+        PostUpdateDto responseDto = postService.updatePost(postId, requestDto, user);
         PostEntity updatedPost = postRepository.findById(post.getId()).orElseThrow(RuntimeException::new);
 
         // then
-        assertThat(responseDto.getId()).isEqualTo(updatedPost.getId());
         assertThat(responseDto.getTitle()).isEqualTo(updatedPost.getTitle());
         assertThat(responseDto.getContent()).isEqualTo(updatedPost.getContent());
         assertThat(responseDto.getStatus()).isEqualTo(updatedPost.getStatus());
         assertThat(responseDto.getExpiredDate().truncatedTo(ChronoUnit.MILLIS))
             .isEqualTo(updatedPost.getExpiredDate().truncatedTo(ChronoUnit.MILLIS));
     }
-
-
 
 }

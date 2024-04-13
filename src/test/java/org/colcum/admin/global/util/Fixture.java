@@ -24,7 +24,7 @@ public class Fixture {
     }
 
     public static UserEntity createFixtureUser() {
-        return new UserEntity("test@gmail.com", "password", "tester", Branch.JONGRO);
+        return new UserEntity("tester@gmail.com", "1234", "tester", Branch.JONGRO);
     }
 
     public static CommentEntity createFixtureComment(UserEntity user, PostEntity post, String content) {

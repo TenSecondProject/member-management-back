@@ -1,10 +1,12 @@
 package org.colcum.admin.domain.post.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.application.PostService;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
@@ -16,6 +18,7 @@ import org.colcum.admin.global.common.IsNullOrType;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
@@ -24,19 +27,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 
-import java.time.LocalDate;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.colcum.admin.global.util.Fixture.createFixtureUser;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
@@ -49,6 +54,9 @@ class PostControllerTest extends AbstractRestDocsTest {
 
     @MockBean
     PostService postService;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @Test
     @DisplayName("조회 조건 없이 게시글을 조회한다")
@@ -102,7 +110,7 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.data.content[0].writtenBy").value("tester"),
                 jsonPath("$.data.content[0].commentCount").value(3),
                 jsonPath("$.data.content[0].bookmarked").value(false)
-             )
+            )
             .andDo(document("posts"))
             .andDo(print())
             .andReturn();
@@ -238,8 +246,6 @@ class PostControllerTest extends AbstractRestDocsTest {
             PostStatus.IN_PROGRESS,
             LocalDateTime.now()
         );
-        String serialized = "{\"title\": \"title\", \"content\": \"content\", \"category\": \"ANNOUNCEMENT\", \"status\": \"IN_PROGRESS\", \"expiredDate\": \"2024-04-10 22:10\"}";
-
 
         UserEntity user = createFixtureUser();
 
@@ -251,7 +257,7 @@ class PostControllerTest extends AbstractRestDocsTest {
             .perform(
                 post("/api/v1/posts")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(serialized))
+                    .content(objectMapper.writeValueAsString(dto)))
             .andExpectAll(
                 status().isCreated(),
                 jsonPath("$.statusCode").value(HttpStatus.CREATED.value()),
@@ -259,6 +265,38 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.data").value(Matchers.nullValue())
             )
             .andDo(print());
+    }
+
+    @Test
+    @DisplayName("게시글을 수정한다")
+    @WithMockJwtAuthentication
+    void updatePost() throws Exception {
+        // given
+        Long postId = 1L;
+        PostUpdateDto postUpdateDto = new PostUpdateDto("updatedTitle", "updatedContent", PostStatus.COMPLETE, LocalDateTime.now());
+        UserEntity user = createFixtureUser();
+
+        // when
+        when(postService.updatePost(eq(postId), any(PostUpdateDto.class), eq(user))).thenReturn(postUpdateDto);
+
+        // then
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        this.mockMvc
+            .perform(
+                put("/api/v1/posts/" + postId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(postUpdateDto)))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data.title").value(postUpdateDto.getTitle()),
+                jsonPath("$.data.content").value(postUpdateDto.getContent()),
+                jsonPath("$.data.status").value(postUpdateDto.getStatus().name()),
+                jsonPath("$.data.expiredDate").value(formatter.format(postUpdateDto.getExpiredDate()))
+            );
+
     }
 
 }
