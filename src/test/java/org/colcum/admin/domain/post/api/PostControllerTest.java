@@ -37,8 +37,10 @@ import static org.colcum.admin.global.util.Fixture.createFixtureUser;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
@@ -273,15 +275,16 @@ class PostControllerTest extends AbstractRestDocsTest {
     void updatePost() throws Exception {
         // given
         Long postId = 1L;
-        PostUpdateDto postUpdateDto = new PostUpdateDto("updatedTitle", "updatedContent", PostStatus.COMPLETE, LocalDateTime.now());
-        UserEntity user = createFixtureUser();
+        String dateTimeStr = "2024-04-12 15:30";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        LocalDateTime expiredTime = LocalDateTime.parse(dateTimeStr, formatter);
+
+        PostUpdateDto postUpdateDto = new PostUpdateDto("updatedTitle", "updatedContent", PostStatus.COMPLETE, expiredTime);
 
         // when
-        when(postService.updatePost(eq(postId), any(PostUpdateDto.class), eq(user))).thenReturn(postUpdateDto);
+        when(postService.updatePost(eq(postId), eq(postUpdateDto), any(UserEntity.class))).thenReturn(postUpdateDto);
 
         // then
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
         this.mockMvc
             .perform(
                 put("/api/v1/posts/" + postId)
@@ -297,6 +300,29 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.data.expiredDate").value(formatter.format(postUpdateDto.getExpiredDate()))
             );
 
+    }
+
+    @Test
+    @DisplayName("게시글을 삭제한다")
+    @WithMockJwtAuthentication
+    void deletePost() throws Exception {
+        // given
+        Long postId = 1L;
+        UserEntity user = createFixtureUser();
+
+        // when
+        doNothing().when(postService).deletePost(postId, user);
+
+        // then
+        this.mockMvc.perform(
+            delete("/api/v1/posts/" + postId)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data").value(Matchers.nullValue())
+            );
     }
 
 }

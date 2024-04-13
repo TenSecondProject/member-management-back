@@ -25,7 +25,6 @@ import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.common.domain.BaseEntity;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;

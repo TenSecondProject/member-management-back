@@ -60,8 +60,22 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             .selectFrom(postEntity)
             .innerJoin(postEntity.user, userEntity)
             .fetchJoin()
-            .where(postEntity.id.eq(id))
+            .where(postEntity.id.eq(id)
+                .and(postEntity.isDeleted.eq(false))
+            )
             .fetchOne());
+    }
+
+    @Override
+    public Optional<PostEntity> findByIdAndDeletedIsFalse(Long id) {
+        return Optional.ofNullable(
+            queryFactory
+                .selectFrom(postEntity)
+                .where(postEntity.id.eq(id)
+                    .and(postEntity.isDeleted.eq(false))
+                )
+                .fetchOne()
+        );
     }
 
     private static BooleanBuilder getBooleanBuilder(PostSearchCondition condition) {
@@ -79,7 +93,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
                 case WRITTEN_USER -> builder.and(postEntity.createdBy.contains(condition.getSearchValue()));
             }
         }
-        return builder;
+        return builder.and(postEntity.isDeleted.eq(false));
     }
 
 }

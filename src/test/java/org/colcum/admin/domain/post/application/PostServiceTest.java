@@ -13,6 +13,7 @@ import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.domain.user.dao.UserRepository;
 import org.colcum.admin.domain.user.domain.UserEntity;
+import org.colcum.admin.global.Error.PostNotFoundException;
 import org.colcum.admin.global.auth.WithMockJwtAuthentication;
 import org.colcum.admin.global.util.Fixture;
 import org.junit.jupiter.api.AfterEach;
@@ -25,6 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -32,6 +34,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.colcum.admin.global.util.Fixture.createFixtureUser;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("local")
@@ -323,7 +326,7 @@ class PostServiceTest {
 
         // when
         PostUpdateDto responseDto = postService.updatePost(postId, requestDto, user);
-        PostEntity updatedPost = postRepository.findById(post.getId()).orElseThrow(RuntimeException::new);
+        PostEntity updatedPost = postRepository.findById(post.getId()).orElseThrow(PostNotFoundException::new);
 
         // then
         assertThat(responseDto.getTitle()).isEqualTo(updatedPost.getTitle());
@@ -331,6 +334,21 @@ class PostServiceTest {
         assertThat(responseDto.getStatus()).isEqualTo(updatedPost.getStatus());
         assertThat(responseDto.getExpiredDate().truncatedTo(ChronoUnit.MILLIS))
             .isEqualTo(updatedPost.getExpiredDate().truncatedTo(ChronoUnit.MILLIS));
+    }
+
+    @Test
+    @DisplayName("게시글을 삭제한다.")
+    void deletePost () {
+        // given
+        PostEntity post = Fixture.createFixturePost("title1", "content1", user);
+        post = postRepository.save(post);
+        Long postId = post.getId();
+
+        // when
+        postService.deletePost(postId, user);
+
+        // then
+        assertThrows(PostNotFoundException.class, () -> postService.inquirePostDetail(postId));
     }
 
 }

@@ -37,7 +37,7 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public PostDetailResponseDto inquirePostDetail(Long id) {
-        PostEntity post = postRepository.findById(id)
+        PostEntity post = postRepository.findByIdAndDeletedIsFalse(id)
             .orElseThrow(() -> new PostNotFoundException("대상 게시글은 존재하지 않습니다."));
 
         return PostDetailResponseDto.from(post);
@@ -63,6 +63,19 @@ public class PostService {
         postRepository.save(post);
 
         return dto;
+    }
+
+    @Transactional
+    public void deletePost(Long postId, UserEntity user) {
+        PostEntity post = postRepository.findByIdWithUser(postId).orElseThrow(() -> {
+            throw new PostNotFoundException("해당 게시글을 찾을 수 없습니다.");
+        });
+
+        if (!post.getUser().getId().equals(user.getId())) {
+            throw new InvalidAuthenticationException("해당 게시글을 수정할 권한이 없습니다.");
+        }
+        post.delete();
+        postRepository.save(post);
     }
 
 }
