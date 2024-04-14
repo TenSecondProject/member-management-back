@@ -24,7 +24,7 @@ public class UserAuthenticationService implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         UserEntity user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new UsernameNotFoundException(MessageFormat.format("대상 이메일 : %s가 존재하지 않습니다", email)));
+            .orElseThrow(() -> new UsernameNotFoundException(MessageFormat.format("대상 이메일 : {0}이 존재하지 않습니다", email)));
 
         List<SimpleGrantedAuthority> roles = List.of(new SimpleGrantedAuthority(user.getUserType().name()));
 
