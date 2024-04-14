@@ -1,0 +1,68 @@
+= API Documentation
+:doctype: book
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+:seclinks:
+
+== Post API
+
+=== GET : 게시글 전체 페이지를 조회한다.
+Path : /api/v1/posts
+
+==== Request
+include::{snippets}/post-controller-test/inquire-posts-with-parameters/http-request.adoc[]
+
+===== Query parameters
+include::{snippets}/posts/query-parameters.adoc[0]
+
+==== Response
+include::{snippets}/post-controller-test/inquire-posts-with-parameters/http-response.adoc[]
+---
+
+=== GET : 게시글 상세 페이지를 조회한다.
+Path: /api/v1/posts/{postId}
+
+==== Request
+include::{snippets}/post-controller-test/inquire-post-detail/http-request.adoc[]
+
+===== Path variable
+include::{snippets}/posts/path-parameters.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/inquire-post-detail/http-response.adoc[]
+---
+
+=== Post : 게시글을 생성한다.
+
+==== Request
+include::{snippets}/post-controller-test/create-post/http-request.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/create-post/http-response.adoc[]
+---
+
+=== PUT : 게시글을 수정한다
+Path: /api/v1/posts/{postId}
+
+==== Path variable
+include::{snippets}/posts/path-parameters.adoc[]
+
+==== Request
+include::{snippets}/post-controller-test/update-post/http-request.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/update-post/http-response.adoc[]
+---
+
+==== Delete : 게시글을 삭제한다
+Path: /api/v1/posts/{postId}
+
+==== Path variable
+include::{snippets}/posts/path-parameters.adoc[]
+
+==== Request
+include::{snippets}/post-controller-test/delete-post/http-request.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/delete-post/http-response.adoc[]

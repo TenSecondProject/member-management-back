@@ -1,30 +1,32 @@
 package org.colcum.admin.domain.post.api;
 
 import lombok.RequiredArgsConstructor;
+import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.application.PostService;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
-import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.Error.InvalidAuthenticationException;
 import org.colcum.admin.global.auth.jwt.JwtAuthentication;
 import org.colcum.admin.global.common.api.dto.ApiResponse;
-import org.colcum.admin.global.auth.domain.UserContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -38,6 +40,7 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping
+    @ResponseStatus(value = HttpStatus.OK)
     public ApiResponse<Page<PostResponseDto>> inquirePosts(
         @RequestParam(name = "searchType",  required = false) SearchType searchType,
         @RequestParam(name = "searchValue", required = false) String searchValue,
@@ -53,8 +56,8 @@ public class PostController {
         return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
     }
 
-    @GetMapping
-    @RequestMapping("/{postId}")
+    @GetMapping("/{postId}")
+    @ResponseStatus(value = HttpStatus.OK)
     public ApiResponse<PostDetailResponseDto> inquirePostDetail(
         @PathVariable(name = "postId", required = true) Long postId,
         @AuthenticationPrincipal JwtAuthentication authentication
@@ -65,6 +68,46 @@ public class PostController {
         PostDetailResponseDto response = postService.inquirePostDetail(postId);
 
         return new ApiResponse<>(HttpStatus.OK.value(), "success", response);
+    }
+
+    @PostMapping
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public ApiResponse<String> createPost(
+        @RequestBody PostCreateDto dto,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        postService.createPost(dto, authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.CREATED.value(), "created", null);
+    }
+
+    @PutMapping("/{postId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public ApiResponse<PostUpdateDto> updatePost(
+        @PathVariable(value = "postId") Long postId,
+        @RequestBody PostUpdateDto dto,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        PostUpdateDto response = postService.updatePost(postId, dto, authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", response);
+    }
+
+    @DeleteMapping("/{postId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public ApiResponse<Void> deletePost(
+        @PathVariable(value = "postId") Long postId,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        postService.deletePost(postId, authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
     }
 
 }

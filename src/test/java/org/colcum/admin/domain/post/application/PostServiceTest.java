@@ -2,8 +2,10 @@ package org.colcum.admin.domain.post.application;
 
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.dao.PostRepository;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
@@ -11,6 +13,8 @@ import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.domain.user.dao.UserRepository;
 import org.colcum.admin.domain.user.domain.UserEntity;
+import org.colcum.admin.global.Error.PostNotFoundException;
+import org.colcum.admin.global.auth.WithMockJwtAuthentication;
 import org.colcum.admin.global.util.Fixture;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,11 +26,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.io.FileNotFoundException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.colcum.admin.global.util.Fixture.createFixtureUser;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("local")
@@ -122,7 +130,8 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, null, statuses, page);;
+        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, null, statuses, page);
+        ;
 
         // then
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
@@ -171,7 +180,8 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, categories, null, page);;
+        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, categories, null, page);
+        ;
 
         // then
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
@@ -196,8 +206,10 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, page);;
-        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, page);;
+        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, page);
+        ;
+        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, page);
+        ;
 
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
@@ -223,8 +235,10 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, page);;
-        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, page);;
+        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, page);
+        ;
+        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, page);
+        ;
 
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
@@ -277,11 +291,64 @@ class PostServiceTest {
         assertThat(post.getStatus()).isEqualTo(response.getStatus());
         assertThat(post.isBookmarked()).isEqualTo(response.isBookmarked());
         assertThat(post.getExpiredDate()).isEqualTo(response.getExpiredDate());
-        assertThat(post.getCreatedBy()).isEqualTo(response.getWrittenBy());
-        assertThat(post.getUser().getName()).isEqualTo(response.getUsername());
+        assertThat(post.getUser().getName()).isEqualTo(response.getWrittenBy());
         assertThat(post.isBookmarked()).isEqualTo(response.isBookmarked());
         assertThat(post.getCommentEntities().stream().map(CommentResponseDto::from).toList()).isEqualTo(response.getCommentResponseDtos());
         assertThat(EmojiResponseDto.from(post.getEmojiReactionEntities())).isEqualTo(response.getEmojiResponseDtos());
+    }
+
+    @Test
+    @DisplayName("게시글을 생성한다.")
+    void createPost() {
+        // given
+        PostCreateDto dto = new PostCreateDto("title", "content", PostCategory.ANNOUNCEMENT, PostStatus.COMPLETE, null);
+
+        // when
+        PostEntity result = postService.createPost(dto, user);
+
+        // then
+        assertThat(result.getTitle()).isEqualTo(dto.getTitle());
+        assertThat(result.getContent()).isEqualTo(dto.getContent());
+        assertThat(result.getCategory()).isEqualTo(dto.getCategory());
+        assertThat(result.getStatus()).isEqualTo(dto.getStatus());
+        assertThat(result.getExpiredDate()).isEqualTo(dto.getExpiredDate());
+        assertThat(result.getUser()).isEqualTo(user);
+    }
+
+    @Test
+    @DisplayName("게시글을 수정한다.")
+    void updatePost() {
+        // given
+        PostEntity post = Fixture.createFixturePost("title1", "content1", user);
+        post = postRepository.save(post);
+        Long postId = post.getId();
+        PostUpdateDto requestDto = new PostUpdateDto("updatedTitle", "updatedContent", PostStatus.COMPLETE, LocalDateTime.now());
+
+        // when
+        PostUpdateDto responseDto = postService.updatePost(postId, requestDto, user);
+        PostEntity updatedPost = postRepository.findById(post.getId()).orElseThrow(PostNotFoundException::new);
+
+        // then
+        assertThat(responseDto.getTitle()).isEqualTo(updatedPost.getTitle());
+        assertThat(responseDto.getContent()).isEqualTo(updatedPost.getContent());
+        assertThat(responseDto.getStatus()).isEqualTo(updatedPost.getStatus());
+        assertThat(responseDto.getExpiredDate().truncatedTo(ChronoUnit.MILLIS))
+            .isEqualTo(updatedPost.getExpiredDate().truncatedTo(ChronoUnit.MILLIS));
+    }
+
+    @Test
+    @DisplayName("게시글을 삭제한다.")
+    void deletePost () {
+        // given
+        PostEntity post = Fixture.createFixturePost("title1", "content1", user);
+        post = postRepository.save(post);
+        Long postId = post.getId();
+
+        // when
+        postService.deletePost(postId, user);
+
+        // then
+        assertThrows(PostNotFoundException.class, () -> postService.inquirePostDetail(postId));
     }
 
 }

@@ -1,35 +1,49 @@
 package org.colcum.admin.domain.post.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.application.PostService;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
+import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.auth.WithMockJwtAuthentication;
 import org.colcum.admin.global.common.AbstractRestDocsTest;
 import org.colcum.admin.global.common.IsNullOrType;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static org.colcum.admin.global.util.Fixture.createFixtureUser;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
@@ -42,6 +56,9 @@ class PostControllerTest extends AbstractRestDocsTest {
 
     @MockBean
     PostService postService;
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @Test
     @DisplayName("조회 조건 없이 게시글을 조회한다")
@@ -95,7 +112,7 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.data.content[0].writtenBy").value("tester"),
                 jsonPath("$.data.content[0].commentCount").value(3),
                 jsonPath("$.data.content[0].bookmarked").value(false)
-             )
+            )
             .andDo(document("posts"))
             .andDo(print())
             .andReturn();
@@ -180,10 +197,9 @@ class PostControllerTest extends AbstractRestDocsTest {
             PostCategory.ANNOUNCEMENT,
             PostStatus.COMPLETE,
             false,
-            now.toLocalDate(),
-            "tester",
             now,
             "tester",
+            now,
             List.of(CommentResponseDto.of("commentTester", now.toLocalDate(), "commentContent")),
             List.of(EmojiResponseDto.of("\uD83D\uDE00", 1, List.of("tester2")))
         );
@@ -204,10 +220,9 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.data.category").value(PostCategory.ANNOUNCEMENT.name()),
                 jsonPath("$.data.status").value(PostStatus.COMPLETE.name()),
                 jsonPath("$.data.bookmarked").value(false),
-                jsonPath("$.data.expiredDate").value(now.format(DateTimeFormatter.ofPattern("yy/MM/dd"))),
+                jsonPath("$.data.expiredDate").value(now.format(DateTimeFormatter.ofPattern("yy/MM/dd HH:mm"))),
                 jsonPath("$.data.writtenBy").value("tester"),
                 jsonPath("$.data.createdAt").value(now.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"))),
-                jsonPath("$.data.username").value("tester"),
                 jsonPath("$.data.commentResponseDtos[0].writtenBy").value("commentTester"),
                 jsonPath("$.data.commentResponseDtos[0].writtenDate").value(now.format(DateTimeFormatter.ofPattern("yy/MM/dd"))),
                 jsonPath("$.data.commentResponseDtos[0].content").value("commentContent"),
@@ -219,6 +234,95 @@ class PostControllerTest extends AbstractRestDocsTest {
                 parameterWithName("postId").description("게시글의 ID")
             )))
             .andDo(print());
+    }
+
+    @Test
+    @DisplayName("게시글을 생성한다")
+    @WithMockJwtAuthentication
+    void createPost() throws Exception {
+        // given
+        PostCreateDto dto = new PostCreateDto(
+            "title",
+            "content",
+            PostCategory.ANNOUNCEMENT,
+            PostStatus.IN_PROGRESS,
+            LocalDateTime.now()
+        );
+
+        UserEntity user = createFixtureUser();
+
+        // when
+        when(postService.createPost(dto, user)).thenReturn(null);
+
+        // then
+        this.mockMvc
+            .perform(
+                post("/api/v1/posts")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(dto)))
+            .andExpectAll(
+                status().isCreated(),
+                jsonPath("$.statusCode").value(HttpStatus.CREATED.value()),
+                jsonPath("$.message").value("created"),
+                jsonPath("$.data").value(Matchers.nullValue())
+            )
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("게시글을 수정한다")
+    @WithMockJwtAuthentication
+    void updatePost() throws Exception {
+        // given
+        Long postId = 1L;
+        String dateTimeStr = "2024-04-12 15:30";
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        LocalDateTime expiredTime = LocalDateTime.parse(dateTimeStr, formatter);
+
+        PostUpdateDto postUpdateDto = new PostUpdateDto("updatedTitle", "updatedContent", PostStatus.COMPLETE, expiredTime);
+
+        // when
+        when(postService.updatePost(eq(postId), eq(postUpdateDto), any(UserEntity.class))).thenReturn(postUpdateDto);
+
+        // then
+        this.mockMvc
+            .perform(
+                put("/api/v1/posts/" + postId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(postUpdateDto)))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data.title").value(postUpdateDto.getTitle()),
+                jsonPath("$.data.content").value(postUpdateDto.getContent()),
+                jsonPath("$.data.status").value(postUpdateDto.getStatus().name()),
+                jsonPath("$.data.expiredDate").value(formatter.format(postUpdateDto.getExpiredDate()))
+            );
+
+    }
+
+    @Test
+    @DisplayName("게시글을 삭제한다")
+    @WithMockJwtAuthentication
+    void deletePost() throws Exception {
+        // given
+        Long postId = 1L;
+        UserEntity user = createFixtureUser();
+
+        // when
+        doNothing().when(postService).deletePost(postId, user);
+
+        // then
+        this.mockMvc.perform(
+            delete("/api/v1/posts/" + postId)
+                .contentType(MediaType.APPLICATION_JSON))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data").value(Matchers.nullValue())
+            );
     }
 
 }

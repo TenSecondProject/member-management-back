@@ -14,10 +14,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.colcum.admin.domain.post.domain.QCommentEntity.commentEntity;
 import static org.colcum.admin.domain.post.domain.QEmojiReactionEntity.emojiReactionEntity;
 import static org.colcum.admin.domain.post.domain.QPostEntity.postEntity;
+import static org.colcum.admin.domain.user.domain.QUserEntity.userEntity;
 
 @Component
 @RequiredArgsConstructor
@@ -25,6 +27,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
 
     private final JPAQueryFactory queryFactory;
 
+    @Override
     public Page<PostResponseDto> search(PostSearchCondition condition, Pageable pageable) {
         BooleanBuilder builder = getBooleanBuilder(condition);
 
@@ -51,6 +54,30 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
         return PageableExecutionUtils.getPage(dtos, pageable, count::fetchCount);
     }
 
+    @Override
+    public Optional<PostEntity> findByIdWithUser(Long id) {
+        return Optional.ofNullable(queryFactory
+            .selectFrom(postEntity)
+            .innerJoin(postEntity.user, userEntity)
+            .fetchJoin()
+            .where(postEntity.id.eq(id)
+                .and(postEntity.isDeleted.eq(false))
+            )
+            .fetchOne());
+    }
+
+    @Override
+    public Optional<PostEntity> findByIdAndDeletedIsFalse(Long id) {
+        return Optional.ofNullable(
+            queryFactory
+                .selectFrom(postEntity)
+                .where(postEntity.id.eq(id)
+                    .and(postEntity.isDeleted.eq(false))
+                )
+                .fetchOne()
+        );
+    }
+
     private static BooleanBuilder getBooleanBuilder(PostSearchCondition condition) {
         BooleanBuilder builder = new BooleanBuilder();
         if (Objects.nonNull(condition.getCategories()) && condition.getCategories().size() > 0) {
@@ -66,7 +93,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
                 case WRITTEN_USER -> builder.and(postEntity.createdBy.contains(condition.getSearchValue()));
             }
         }
-        return builder;
+        return builder.and(postEntity.isDeleted.eq(false));
     }
 
 }

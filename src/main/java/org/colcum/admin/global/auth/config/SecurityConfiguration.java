@@ -37,14 +37,15 @@ public class SecurityConfiguration {
     protected SecurityFilterChain config(HttpSecurity http) throws Exception {
         http
             .cors(AbstractHttpConfigurer::disable)
+            .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(
                 request -> request
                     .requestMatchers("/login").permitAll()
-                    .requestMatchers("/docs/index").permitAll()
+                    .requestMatchers("/docs/**").permitAll()
                     .requestMatchers("/api/**").hasRole(UserType.STAFF.name())
                     .anyRequest().authenticated()
             )
-            .addFilterBefore(new JwtAuthenticationFilter(jwt()), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new JwtAuthenticationFilter(jwt(), userAuthenticationService), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new LoggingFilter(), SecurityContextHolderFilter.class)
             .formLogin(
                 form -> form
@@ -63,7 +64,7 @@ public class SecurityConfiguration {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwt());
+        return new JwtAuthenticationFilter(jwt(), userAuthenticationService);
     }
 
     @Bean

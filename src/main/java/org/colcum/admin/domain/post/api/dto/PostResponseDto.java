@@ -50,7 +50,7 @@ public class PostResponseDto {
             entity.getTitle(),
             entity.getContent(),
             entity.getStatus(),
-            entity.getCreatedBy(),
+            entity.getUser().getName(),
             entity.isBookmarked(),
             entity.getCommentEntities().size(),
             EmojiResponseDto.from(entity.getEmojiReactionEntities())

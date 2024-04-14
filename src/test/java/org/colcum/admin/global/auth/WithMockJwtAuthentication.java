@@ -11,8 +11,6 @@ public @interface WithMockJwtAuthentication {
 
     String token() default "testToken";
 
-    long id() default 1L;
-
     String role() default "STAFF";
 
 }

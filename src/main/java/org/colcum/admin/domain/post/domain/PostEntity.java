@@ -7,6 +7,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -16,12 +19,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.common.domain.BaseEntity;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +36,10 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 public class PostEntity extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, length = 255)
     private String title;
@@ -50,7 +58,7 @@ public class PostEntity extends BaseEntity {
     @Column(nullable = false)
     private boolean isBookmarked;
 
-    private LocalDate expiredDate;
+    private LocalDateTime expiredDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
@@ -64,6 +72,28 @@ public class PostEntity extends BaseEntity {
     @OneToMany(mappedBy = "postEntity")
     @ToString.Exclude
     private List<EmojiReactionEntity> emojiReactionEntities = new ArrayList<>();
+
+    public PostEntity(String title, String content, PostCategory category, PostStatus status, boolean isBookmarked, LocalDateTime expiredDate, UserEntity user, List<CommentEntity> commentEntities, List<EmojiReactionEntity> emojiReactionEntities) {
+        this.title = title;
+        this.content = content;
+        this.category = category;
+        this.status = status;
+        this.isBookmarked = isBookmarked;
+        this.expiredDate = expiredDate;
+        this.user = user;
+        this.commentEntities = commentEntities;
+        this.emojiReactionEntities = emojiReactionEntities;
+    }
+
+    public PostEntity(String title, String content, PostCategory category, PostStatus status, boolean isBookmarked, LocalDateTime expiredDate, UserEntity user) {
+        this.title = title;
+        this.content = content;
+        this.category = category;
+        this.status = status;
+        this.isBookmarked = isBookmarked;
+        this.expiredDate = expiredDate;
+        this.user = user;
+    }
 
     public void addComment(CommentEntity commentEntity) {
         this.commentEntities.add(commentEntity);
@@ -91,6 +121,14 @@ public class PostEntity extends BaseEntity {
 
     public void setUser(UserEntity user) {
         this.user = user;
+    }
+
+    public PostEntity update(PostUpdateDto dto) {
+        this.title = dto.getTitle();
+        this.content = dto.getContent();
+        this.status = dto.getStatus();
+        this.expiredDate = dto.getExpiredDate();
+        return this;
     }
 
 }
