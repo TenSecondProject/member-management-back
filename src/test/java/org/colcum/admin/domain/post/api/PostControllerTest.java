@@ -3,6 +3,7 @@ package org.colcum.admin.domain.post.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
@@ -15,6 +16,7 @@ import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.Error.InvalidAuthenticationException;
 import org.colcum.admin.global.Error.PostNotFoundException;
 import org.colcum.admin.global.auth.WithMockJwtAuthentication;
+import org.colcum.admin.global.auth.jwt.JwtAuthentication;
 import org.colcum.admin.global.common.AbstractRestDocsTest;
 import org.colcum.admin.global.common.IsNullOrType;
 import org.hamcrest.Matchers;
@@ -29,9 +31,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -40,7 +41,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.colcum.admin.global.util.Fixture.createFixtureUser;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.assertArg;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -375,6 +375,35 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.message").value("success"),
                 jsonPath("$.data").value(Matchers.nullValue())
             );
+    }
+
+    @Test
+    @DisplayName("북마크된 게시글을 조회한다.")
+    @WithMockJwtAuthentication
+    void inquirePostsWithBookmarked() throws Exception {
+        // given
+
+        Long postId = 1L;
+        List<PostBookmarkedResponse> responses = List.of(new PostBookmarkedResponse(postId, "bookmarkedPost"));
+
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+
+        // when
+        when(postService.findBookmarkedPosts(user)).thenReturn(responses);
+
+        // then
+        this.mockMvc
+            .perform(
+                get("/api/v1/posts/bookmarks"))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data[0].postId").value(responses.get(0).getPostId()),
+                jsonPath("$.data[0].title").value(responses.get(0).getTitle())
+            )
+            .andDo(print());
+
     }
 
 }
