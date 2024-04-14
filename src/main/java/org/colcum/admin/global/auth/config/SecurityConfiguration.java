@@ -2,6 +2,7 @@ package org.colcum.admin.global.auth.config;
 
 import lombok.RequiredArgsConstructor;
 import org.colcum.admin.domain.user.domain.UserType;
+import org.colcum.admin.global.auth.api.AuthenticationFailureHandler;
 import org.colcum.admin.global.auth.api.AuthenticationSuccessHandler;
 import org.colcum.admin.global.auth.api.LoggingFilter;
 import org.colcum.admin.global.auth.application.UserAuthenticationProvider;
@@ -51,6 +52,7 @@ public class SecurityConfiguration {
                 form -> form
                     .permitAll()
                     .successHandler(new AuthenticationSuccessHandler(jwt()))
+                    .failureHandler(new AuthenticationFailureHandler())
             );
         return http.build();
     }

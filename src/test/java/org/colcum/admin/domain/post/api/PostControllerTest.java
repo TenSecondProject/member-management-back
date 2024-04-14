@@ -12,6 +12,8 @@ import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.domain.user.domain.UserEntity;
+import org.colcum.admin.global.Error.InvalidAuthenticationException;
+import org.colcum.admin.global.Error.PostNotFoundException;
 import org.colcum.admin.global.auth.WithMockJwtAuthentication;
 import org.colcum.admin.global.common.AbstractRestDocsTest;
 import org.colcum.admin.global.common.IsNullOrType;
@@ -27,15 +29,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestExecutionListeners;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.colcum.admin.global.util.Fixture.createFixtureUser;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.assertArg;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -184,6 +189,29 @@ class PostControllerTest extends AbstractRestDocsTest {
     }
 
     @Test
+    @DisplayName("로그인 되지 않은 상태에서 게시글 조회 시, 예외를 응답한다.")
+    void inquirePostsWithoutCredential() throws Exception {
+        // when & then
+        this.mockMvc
+            .perform(
+                get("/api/v1/posts").accept(MediaType.APPLICATION_JSON)
+                    .param("searchType", SearchType.TITLE.name())
+                    .param("searchValue", "title")
+                    .param("postStatus", PostStatus.IN_PROGRESS.name())
+                    .param("postCategory", PostCategory.DELIVERY.name())
+                    .param("page", "0")
+                    .param("size", "10"))
+            .andExpectAll(
+                status().isUnauthorized(),
+                result -> assertThat(result.getResolvedException()).isInstanceOf(InvalidAuthenticationException.class),
+                jsonPath("$.statusCode").value(HttpStatus.UNAUTHORIZED.value()),
+                jsonPath("$.message").value("해당 서비스는 로그인 후 사용하실 수 있습니다."),
+                jsonPath("$.data").value(Matchers.nullValue())
+            )
+            .andDo(print());
+    }
+
+    @Test
     @DisplayName("게시글 상세 페이지를 조회한다")
     @WithMockJwtAuthentication
     void inquirePostDetail() throws Exception {
@@ -233,6 +261,30 @@ class PostControllerTest extends AbstractRestDocsTest {
             .andDo(document("posts", pathParameters(
                 parameterWithName("postId").description("게시글의 ID")
             )))
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 게시글이면 예외를 던진다")
+    @WithMockJwtAuthentication
+    void inquirePostWithNonExist() throws Exception {
+        // given
+        Long nonExistPostId = 1L;
+
+        when(postService.inquirePostDetail(nonExistPostId)).thenThrow(new PostNotFoundException("대상 게시글은 존재하지 않습니다."));
+
+        // when & then
+        this.mockMvc
+            .perform(
+                get("/api/v1/posts/{postId}", nonExistPostId).accept(MediaType.APPLICATION_JSON)
+            )
+            .andExpectAll(
+                status().isNotFound(),
+                result -> assertThat(result.getResolvedException()).isInstanceOf(PostNotFoundException.class),
+                jsonPath("$.statusCode").value(HttpStatus.NOT_FOUND.value()),
+                jsonPath("$.message").value("대상 게시글은 존재하지 않습니다."),
+                jsonPath("$.data").value(Matchers.nullValue())
+            )
             .andDo(print());
     }
 
