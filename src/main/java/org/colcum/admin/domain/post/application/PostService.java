@@ -1,6 +1,7 @@
 package org.colcum.admin.domain.post.application;
 
 import lombok.RequiredArgsConstructor;
+import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
@@ -76,6 +77,11 @@ public class PostService {
         }
         post.delete();
         postRepository.save(post);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostBookmarkedResponse> findBookmarkedPosts(UserEntity user) {
+        return postRepository.findWithBookmarked(user.getId());
     }
 
 }

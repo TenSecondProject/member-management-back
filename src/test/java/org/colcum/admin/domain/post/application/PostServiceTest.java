@@ -2,6 +2,7 @@ package org.colcum.admin.domain.post.application;
 
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
@@ -349,6 +350,26 @@ class PostServiceTest {
 
         // then
         assertThrows(PostNotFoundException.class, () -> postService.inquirePostDetail(postId));
+    }
+
+    @Test
+    @DisplayName("북마크 된 게시글을 조회한다.")
+    void inquirePostsWithBookmarked() {
+        // given
+        PostEntity post1 = Fixture.createFixturePost("title1", "content1", user);
+        PostEntity post2 = Fixture.createFixturePost("title2", "content2", user);
+        PostEntity post3 = Fixture.createFixturePost("title3", "content3", user);
+        post1.bookmarked();
+
+        post1 = postRepository.save(post1);
+        postRepository.save(post2);
+        postRepository.save(post3);
+
+        // when
+        List<PostBookmarkedResponse> responses = postService.findBookmarkedPosts(user);
+
+        // then
+        assertThat(responses).containsExactly(PostBookmarkedResponse.from(post1));
     }
 
 }

@@ -1,9 +1,11 @@
 package org.colcum.admin.domain.post.dao;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
 import org.colcum.admin.domain.post.domain.PostEntity;
@@ -76,6 +78,22 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
                 )
                 .fetchOne()
         );
+    }
+
+    @Override
+    public List<PostBookmarkedResponse> findWithBookmarked(Long userId) {
+        return queryFactory
+            .select(Projections.constructor(
+                PostBookmarkedResponse.class,
+                postEntity.id,
+                postEntity.title
+            ))
+            .from(postEntity)
+            .innerJoin(postEntity.user, userEntity)
+            .where(postEntity.isBookmarked.eq(true)
+                .and(userEntity.id.eq(userId))
+            )
+            .fetch();
     }
 
     private static BooleanBuilder getBooleanBuilder(PostSearchCondition condition) {

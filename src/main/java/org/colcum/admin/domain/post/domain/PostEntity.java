@@ -131,4 +131,9 @@ public class PostEntity extends BaseEntity {
         return this;
     }
 
+    public PostEntity bookmarked() {
+        this.isBookmarked = true;
+        return this;
+    }
+
 }
