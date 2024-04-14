@@ -40,3 +40,29 @@ include::{snippets}/post-controller-test/create-post/http-request.adoc[]
 
 ==== Response
 include::{snippets}/post-controller-test/create-post/http-response.adoc[]
+---
+
+=== PUT : 게시글을 수정한다
+Path: /api/v1/posts/{postId}
+
+==== Path variable
+include::{snippets}/posts/path-parameters.adoc[]
+
+==== Request
+include::{snippets}/post-controller-test/update-post/http-request.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/update-post/http-response.adoc[]
+---
+
+==== Delete : 게시글을 삭제한다
+Path: /api/v1/posts/{postId}
+
+==== Path variable
+include::{snippets}/posts/path-parameters.adoc[]
+
+==== Request
+include::{snippets}/post-controller-test/delete-post/http-request.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/delete-post/http-response.adoc[]
