@@ -365,5 +365,57 @@ class PostServiceTest {
         assertThat(responses).doesNotContain(PostBookmarkedResponse.from(post2));
         assertThat(responses).doesNotContain(PostBookmarkedResponse.from(post3));
     }
-    
+
+
+    @Test
+    @DisplayName("게시글에 북마크를 한다.")
+    void doBookmarkOnPost() {
+        // given
+        PostEntity post1 = Fixture.createFixturePost("title1", "content1", user);
+        PostEntity post2 = Fixture.createFixturePost("title2", "content2", user);
+        PostEntity post3 = Fixture.createFixturePost("title3", "content3", user);
+
+        post1 = postRepository.save(post1);
+        postRepository.save(post2);
+        postRepository.save(post3);
+
+        // when
+        postService.addBookmark(post1.getId(), user);
+        List<PostBookmarkedResponse> responses = postService.findBookmarkedPosts(user);
+
+        // then
+        assertThat(responses).containsExactly(PostBookmarkedResponse.from(post1));
+        assertThat(responses).doesNotContain(PostBookmarkedResponse.from(post2));
+        assertThat(responses).doesNotContain(PostBookmarkedResponse.from(post3));
+    }
+
+    @Test
+    @DisplayName("게시글에 북마크를 제거한다.")
+    void removeBookmarkOnPost() {
+        // given
+        PostEntity post1 = Fixture.createFixturePost("title1", "content1", user);
+        PostEntity post2 = Fixture.createFixturePost("title2", "content2", user);
+        PostEntity post3 = Fixture.createFixturePost("title3", "content3", user);
+
+        post1 = postRepository.save(post1);
+        post2 = postRepository.save(post2);
+        post3 = postRepository.save(post3);
+
+        Bookmark target = new Bookmark(post1.getId());
+
+        // when
+        user.addBookmark(target);
+        user.addBookmark(new Bookmark(post2.getId()));
+        user.addBookmark(new Bookmark(post3.getId()));
+        user = userRepository.save(user);
+
+        postService.removeBookmark(target.getPostId(), user);
+        List<PostBookmarkedResponse> responses = postService.findBookmarkedPosts(user);
+
+        // then
+        assertThat(responses).doesNotContain(PostBookmarkedResponse.from(post1));
+        assertThat(responses).contains(PostBookmarkedResponse.from(post2));
+        assertThat(responses).contains(PostBookmarkedResponse.from(post3));
+    }
+
 }
