@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
+import org.colcum.admin.domain.user.domain.vo.Bookmark;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -68,7 +69,7 @@ public class PostDetailResponseDto {
             post.getContent(),
             post.getCategory(),
             post.getStatus(),
-            post.isBookmarked(),
+            post.getUser().getBookmarks().contains(new Bookmark(post.getId())),
             post.getExpiredDate(),
             post.getUser().getName(),
             post.getCreatedAt(),

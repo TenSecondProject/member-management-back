@@ -2,6 +2,7 @@ package org.colcum.admin.domain.post.dao;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -9,11 +10,14 @@ import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
 import org.colcum.admin.domain.post.domain.PostEntity;
+import org.colcum.admin.domain.user.domain.vo.Bookmark;
+import org.colcum.admin.domain.user.domain.vo.QBookmark;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -22,6 +26,7 @@ import static org.colcum.admin.domain.post.domain.QCommentEntity.commentEntity;
 import static org.colcum.admin.domain.post.domain.QEmojiReactionEntity.emojiReactionEntity;
 import static org.colcum.admin.domain.post.domain.QPostEntity.postEntity;
 import static org.colcum.admin.domain.user.domain.QUserEntity.userEntity;
+import static org.colcum.admin.domain.user.domain.vo.QBookmark.bookmark;
 
 @Component
 @RequiredArgsConstructor
@@ -36,6 +41,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
         List<PostEntity> fetch = queryFactory
             .select(postEntity)
             .from(postEntity)
+            .innerJoin(postEntity.user, userEntity)
             .leftJoin(postEntity.commentEntities, commentEntity)
             .leftJoin(postEntity.emojiReactionEntities, emojiReactionEntity).fetchJoin()
             .where(builder)
@@ -89,9 +95,15 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
                 postEntity.title
             ))
             .from(postEntity)
-            .innerJoin(postEntity.user, userEntity)
-            .where(postEntity.isBookmarked.eq(true)
-                .and(userEntity.id.eq(userId))
+            .where(
+                postEntity.id.in(
+                    JPAExpressions
+                        .select(bookmark.postId)
+                        .from(userEntity)
+                        .join(userEntity.bookmarks, bookmark)
+                        .where(userEntity.id.eq(userId)
+                    )
+                )
             )
             .fetch();
     }

@@ -1,6 +1,6 @@
 package org.colcum.admin.global.auth;
 
-import org.colcum.admin.domain.user.domain.Branch;
+import org.colcum.admin.domain.user.domain.type.Branch;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.auth.jwt.JwtAuthentication;
 import org.colcum.admin.global.auth.jwt.JwtAuthenticationToken;

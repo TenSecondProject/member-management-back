@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
+import org.colcum.admin.domain.user.domain.vo.Bookmark;
 
 import java.util.List;
 
@@ -51,7 +52,7 @@ public class PostResponseDto {
             entity.getContent(),
             entity.getStatus(),
             entity.getUser().getName(),
-            entity.isBookmarked(),
+            entity.getUser().getBookmarks().contains(new Bookmark(entity.getId())),
             entity.getCommentEntities().size(),
             EmojiResponseDto.from(entity.getEmojiReactionEntities())
         );
