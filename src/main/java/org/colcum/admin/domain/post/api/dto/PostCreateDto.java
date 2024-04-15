@@ -30,7 +30,6 @@ public class PostCreateDto {
             content,
             category,
             status,
-            false,
             expiredDate,
             user
         );

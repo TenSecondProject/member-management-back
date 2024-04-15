@@ -14,8 +14,8 @@ import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.domain.user.dao.UserRepository;
 import org.colcum.admin.domain.user.domain.UserEntity;
+import org.colcum.admin.domain.user.domain.vo.Bookmark;
 import org.colcum.admin.global.Error.PostNotFoundException;
-import org.colcum.admin.global.auth.WithMockJwtAuthentication;
 import org.colcum.admin.global.util.Fixture;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +27,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -132,7 +131,6 @@ class PostServiceTest {
 
         // when
         Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, null, statuses, page);
-        ;
 
         // then
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
@@ -182,7 +180,6 @@ class PostServiceTest {
 
         // when
         Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, categories, null, page);
-        ;
 
         // then
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
@@ -208,9 +205,7 @@ class PostServiceTest {
 
         // when
         Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, page);
-        ;
         Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, page);
-        ;
 
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
@@ -237,9 +232,7 @@ class PostServiceTest {
 
         // when
         Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, page);
-        ;
         Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, page);
-        ;
 
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
@@ -290,10 +283,8 @@ class PostServiceTest {
         assertThat(post.getContent()).isEqualTo(response.getContent());
         assertThat(post.getCategory()).isEqualTo(response.getCategory());
         assertThat(post.getStatus()).isEqualTo(response.getStatus());
-        assertThat(post.isBookmarked()).isEqualTo(response.isBookmarked());
         assertThat(post.getExpiredDate()).isEqualTo(response.getExpiredDate());
         assertThat(post.getUser().getName()).isEqualTo(response.getWrittenBy());
-        assertThat(post.isBookmarked()).isEqualTo(response.isBookmarked());
         assertThat(post.getCommentEntities().stream().map(CommentResponseDto::from).toList()).isEqualTo(response.getCommentResponseDtos());
         assertThat(EmojiResponseDto.from(post.getEmojiReactionEntities())).isEqualTo(response.getEmojiResponseDtos());
     }
@@ -339,7 +330,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("게시글을 삭제한다.")
-    void deletePost () {
+    void deletePost() {
         // given
         PostEntity post = Fixture.createFixturePost("title1", "content1", user);
         post = postRepository.save(post);
@@ -359,17 +350,20 @@ class PostServiceTest {
         PostEntity post1 = Fixture.createFixturePost("title1", "content1", user);
         PostEntity post2 = Fixture.createFixturePost("title2", "content2", user);
         PostEntity post3 = Fixture.createFixturePost("title3", "content3", user);
-        post1.bookmarked();
 
         post1 = postRepository.save(post1);
         postRepository.save(post2);
         postRepository.save(post3);
 
         // when
+        user.addBookmark(new Bookmark(post1.getId()));
+        user = userRepository.save(user);
         List<PostBookmarkedResponse> responses = postService.findBookmarkedPosts(user);
 
         // then
         assertThat(responses).containsExactly(PostBookmarkedResponse.from(post1));
+        assertThat(responses).doesNotContain(PostBookmarkedResponse.from(post2));
+        assertThat(responses).doesNotContain(PostBookmarkedResponse.from(post3));
     }
-
+    
 }
