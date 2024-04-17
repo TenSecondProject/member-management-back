@@ -1,13 +1,16 @@
 package org.colcum.admin.domain.post.application;
 
 import lombok.RequiredArgsConstructor;
+import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
+import org.colcum.admin.domain.post.dao.CommentRepository;
 import org.colcum.admin.domain.post.dao.PostRepository;
+import org.colcum.admin.domain.post.domain.CommentEntity;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
@@ -31,6 +34,8 @@ public class PostService {
     private final PostRepository postRepository;
 
     private final UserRepository userRepository;
+
+    private final CommentRepository commentRepository;
 
     @Transactional(readOnly = true)
     public Page<PostResponseDto> findByCriteria(SearchType searchType, String searchValue, List<PostCategory> categories, List<PostStatus> statuses, Pageable pageable) {
@@ -59,11 +64,9 @@ public class PostService {
         PostEntity post = postRepository.findByIdWithUser(postId).orElseThrow(() -> {
             throw new PostNotFoundException("해당 게시글을 찾을 수 없습니다.");
         });
-
         if (!post.getUser().getId().equals(user.getId())) {
             throw new InvalidAuthenticationException("해당 게시글을 수정할 권한이 없습니다.");
         }
-
         post = post.update(dto);
         postRepository.save(post);
 
@@ -75,7 +78,6 @@ public class PostService {
         PostEntity post = postRepository.findByIdWithUser(postId).orElseThrow(() -> {
             throw new PostNotFoundException("해당 게시글을 찾을 수 없습니다.");
         });
-
         if (!post.getUser().getId().equals(user.getId())) {
             throw new InvalidAuthenticationException("해당 게시글을 수정할 권한이 없습니다.");
         }
@@ -98,6 +100,16 @@ public class PostService {
     public void removeBookmark(Long postId, UserEntity user) {
         user.removeBookmark(new Bookmark(postId));
         userRepository.save(user);
+    }
+
+    @Transactional
+    public Long addComment(Long postId, CommentCreateRequestDto dto, UserEntity user) {
+        PostEntity post = postRepository.findById(postId).orElseThrow(() -> {
+            throw new PostNotFoundException("해당 게시글을 찾을 수 없습니다.");
+        });
+        CommentEntity comment = dto.toEntity(user, post);
+        comment = commentRepository.save(commentRepository.save(comment));
+        return comment.getId();
     }
 
 }

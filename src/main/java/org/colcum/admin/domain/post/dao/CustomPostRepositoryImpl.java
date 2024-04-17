@@ -79,9 +79,12 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
         return Optional.ofNullable(
             queryFactory
                 .selectFrom(postEntity)
+                .innerJoin(postEntity.commentEntities, commentEntity).fetchJoin()
                 .where(postEntity.id.eq(id)
                     .and(postEntity.isDeleted.eq(false))
+                    .and(commentEntity.isDeleted.eq(false))
                 )
+                .distinct()
                 .fetchOne()
         );
     }

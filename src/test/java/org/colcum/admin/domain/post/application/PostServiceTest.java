@@ -1,5 +1,6 @@
 package org.colcum.admin.domain.post.application;
 
+import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
@@ -7,7 +8,9 @@ import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
+import org.colcum.admin.domain.post.dao.CommentRepository;
 import org.colcum.admin.domain.post.dao.PostRepository;
+import org.colcum.admin.domain.post.domain.CommentEntity;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
@@ -22,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,8 +35,10 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.colcum.admin.global.util.Fixture.createFixturePost;
 import static org.colcum.admin.global.util.Fixture.createFixtureUser;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -50,6 +56,9 @@ class PostServiceTest {
     private UserRepository userRepository;
 
     private UserEntity user;
+
+    @Autowired
+    private CommentRepository commentRepository;
 
     @BeforeEach
     void setup() {
@@ -416,6 +425,76 @@ class PostServiceTest {
         assertThat(responses).doesNotContain(PostBookmarkedResponse.from(post1));
         assertThat(responses).contains(PostBookmarkedResponse.from(post2));
         assertThat(responses).contains(PostBookmarkedResponse.from(post3));
+    }
+
+    @Test
+    @DisplayName("게시글 내의 댓글을 조회한다.")
+    void inquireCommentsInPost() {
+        // given
+        PostEntity post = Fixture.createFixturePost("title1", "content1", user);
+        CommentEntity comment1 = new CommentEntity("comment1", user, post);
+        CommentEntity comment2 = new CommentEntity("comment2", user, post);
+        CommentEntity comment3 = new CommentEntity("comment3", user, post);
+
+        post.addComment(comment1);
+        post.addComment(comment2);
+        post.addComment(comment3);
+        post = postRepository.save(post);
+        comment1 = commentRepository.save(comment1);
+        comment2 = commentRepository.save(comment2);
+        comment3 = commentRepository.save(comment3);
+
+        // when
+        PostDetailResponseDto response = postService.inquirePostDetail(post.getId());
+
+        // then
+        assertThat(response.getCommentResponseDtos()).contains(CommentResponseDto.from(comment1));
+        assertThat(response.getCommentResponseDtos()).contains(CommentResponseDto.from(comment2));
+        assertThat(response.getCommentResponseDtos()).contains(CommentResponseDto.from(comment3));
+    }
+
+    @Test
+    @DisplayName("삭제가 된 댓글은 게시글에 나오지 않는다.")
+    void doNotInquireWhenCommentIsDeletedInPost() {
+        // given
+        PostEntity post = Fixture.createFixturePost("title1", "content1", user);
+        CommentEntity comment1 = new CommentEntity("comment1", user, post);
+        CommentEntity comment2 = new CommentEntity("comment2", user, post);
+        CommentEntity comment3 = new CommentEntity("comment3", user, post);
+
+        comment3.delete();
+
+        post.addComment(comment1);
+        post.addComment(comment2);
+        post.addComment(comment3);
+        post = postRepository.save(post);
+        comment1 = commentRepository.save(comment1);
+        comment2 = commentRepository.save(comment2);
+        comment3 = commentRepository.save(comment3);
+
+        // when
+        PostDetailResponseDto response = postService.inquirePostDetail(post.getId());
+
+        // then
+        assertThat(response.getCommentResponseDtos()).contains(CommentResponseDto.from(comment1));
+        assertThat(response.getCommentResponseDtos()).contains(CommentResponseDto.from(comment2));
+        assertThat(response.getCommentResponseDtos()).doesNotContain(CommentResponseDto.from(comment3));
+    }
+
+    @Test
+    @DisplayName("게시글에 댓글을 생성한다.")
+    void createCommentInPost() {
+        // given
+        PostEntity post = Fixture.createFixturePost("title1", "content1", user);
+        post = postRepository.save(post);
+        CommentCreateRequestDto dto = new CommentCreateRequestDto("comment1");
+
+        // when
+        Long commentId = postService.addComment(post.getId(), dto, user);
+
+        // then
+        PostDetailResponseDto response = postService.inquirePostDetail(post.getId());
+        assertThat(response.getCommentResponseDtos().stream().map(CommentResponseDto::getId)).contains(commentId);
     }
 
 }

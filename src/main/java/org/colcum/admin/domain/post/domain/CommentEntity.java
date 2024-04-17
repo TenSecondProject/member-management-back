@@ -29,6 +29,9 @@ public class CommentEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 500, nullable = false)
+    private String content;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private UserEntity user;
@@ -37,13 +40,10 @@ public class CommentEntity extends BaseEntity {
     @JoinColumn(name = "post_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private PostEntity postEntity;
 
-    @Column(length = 500, nullable = false)
-    private String content;
-
-    public CommentEntity(UserEntity user, PostEntity postEntity, String content) {
+    public CommentEntity(String content, UserEntity user, PostEntity postEntity) {
+        this.content = content;
         this.user = user;
         this.postEntity = postEntity;
-        this.content = content;
     }
 
     public void setPostEntity(PostEntity postEntity) {
