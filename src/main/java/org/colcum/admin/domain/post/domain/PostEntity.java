@@ -55,9 +55,6 @@ public class PostEntity extends BaseEntity {
     @Enumerated
     private PostStatus status;
 
-    @Column(nullable = false)
-    private boolean isBookmarked;
-
     private LocalDateTime expiredDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -73,24 +70,22 @@ public class PostEntity extends BaseEntity {
     @ToString.Exclude
     private List<EmojiReactionEntity> emojiReactionEntities = new ArrayList<>();
 
-    public PostEntity(String title, String content, PostCategory category, PostStatus status, boolean isBookmarked, LocalDateTime expiredDate, UserEntity user, List<CommentEntity> commentEntities, List<EmojiReactionEntity> emojiReactionEntities) {
+    public PostEntity(String title, String content, PostCategory category, PostStatus status, LocalDateTime expiredDate, UserEntity user, List<CommentEntity> commentEntities, List<EmojiReactionEntity> emojiReactionEntities) {
         this.title = title;
         this.content = content;
         this.category = category;
         this.status = status;
-        this.isBookmarked = isBookmarked;
         this.expiredDate = expiredDate;
         this.user = user;
         this.commentEntities = commentEntities;
         this.emojiReactionEntities = emojiReactionEntities;
     }
 
-    public PostEntity(String title, String content, PostCategory category, PostStatus status, boolean isBookmarked, LocalDateTime expiredDate, UserEntity user) {
+    public PostEntity(String title, String content, PostCategory category, PostStatus status, LocalDateTime expiredDate, UserEntity user) {
         this.title = title;
         this.content = content;
         this.category = category;
         this.status = status;
-        this.isBookmarked = isBookmarked;
         this.expiredDate = expiredDate;
         this.user = user;
     }

@@ -1,6 +1,7 @@
 package org.colcum.admin.domain.post.api;
 
 import lombok.RequiredArgsConstructor;
+import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
@@ -107,6 +108,44 @@ public class PostController {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
         postService.deletePost(postId, authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
+    }
+
+    @GetMapping("/bookmarks")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<PostBookmarkedResponse>> inquirePostsWithBookmarked(
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        List<PostBookmarkedResponse> responses = postService.findBookmarkedPosts(authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
+    }
+
+    @PostMapping("/{postId}/bookmarks")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Void> addBookmark(
+        @PathVariable(value = "postId") Long postId,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        postService.addBookmark(postId, authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
+    }
+
+    @DeleteMapping("/{postId}/bookmarks")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Void> removeBookmark(
+        @PathVariable(value = "postId") Long postId,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        postService.removeBookmark(postId, authentication.userEntity);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
     }
 

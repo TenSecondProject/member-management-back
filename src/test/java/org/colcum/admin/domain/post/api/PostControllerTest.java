@@ -3,23 +3,28 @@ package org.colcum.admin.domain.post.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
+import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.application.PostService;
+import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.domain.user.domain.UserEntity;
+import org.colcum.admin.domain.user.domain.vo.Bookmark;
 import org.colcum.admin.global.Error.InvalidAuthenticationException;
 import org.colcum.admin.global.Error.PostNotFoundException;
 import org.colcum.admin.global.auth.WithMockJwtAuthentication;
+import org.colcum.admin.global.auth.jwt.JwtAuthentication;
 import org.colcum.admin.global.common.AbstractRestDocsTest;
 import org.colcum.admin.global.common.IsNullOrType;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.stubbing.OngoingStubbing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -29,19 +34,20 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.text.SimpleDateFormat;
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.colcum.admin.global.util.Fixture.createFixturePost;
 import static org.colcum.admin.global.util.Fixture.createFixtureUser;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.assertArg;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -375,6 +381,96 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.message").value("success"),
                 jsonPath("$.data").value(Matchers.nullValue())
             );
+    }
+
+    @Test
+    @DisplayName("북마크된 게시글을 조회한다.")
+    @WithMockJwtAuthentication
+    void inquirePostsWithBookmarked() throws Exception {
+        // given
+
+        Long postId = 1L;
+        List<PostBookmarkedResponse> responses = List.of(new PostBookmarkedResponse(postId, "bookmarkedPost"));
+
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+
+        // when
+        when(postService.findBookmarkedPosts(user)).thenReturn(responses);
+
+        // then
+        this.mockMvc
+            .perform(
+                get("/api/v1/posts/bookmarks"))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data[0].postId").value(responses.get(0).getPostId()),
+                jsonPath("$.data[0].title").value(responses.get(0).getTitle())
+            )
+            .andDo(print());
+
+    }
+
+    @Test
+    @DisplayName("게시글에 북마크를 한다.")
+    @WithMockJwtAuthentication
+    void addBookmark() throws Exception {
+        // given
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+        Long postId = 1L;
+        Bookmark target = new Bookmark(postId);
+
+        // when
+        doAnswer(invocation -> {
+            user.addBookmark(target);
+            return null;
+        }).when(postService).addBookmark(postId, user);
+
+        // then
+        this.mockMvc
+            .perform(
+                post(MessageFormat.format("/api/v1/posts/{0}/bookmarks", postId)))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data").value(Matchers.nullValue())
+            )
+            .andDo(print());
+
+        assertThat(user.getBookmarks()).contains(target);
+    }
+
+    @Test
+    @DisplayName("게시글에 북마크를 제거한다.")
+    @WithMockJwtAuthentication
+    void removeBookmark() throws Exception {
+        // given
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+        Long postId = 1L;
+        Bookmark target = new Bookmark(postId);
+        user.addBookmark(target);
+
+        // when
+        doAnswer(invocation -> {
+            user.removeBookmark(target);
+            return null;
+        }).when(postService).removeBookmark(postId, user);
+
+        // then
+        this.mockMvc
+            .perform(
+                delete(MessageFormat.format("/api/v1/posts/{0}/bookmarks", postId)))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data").value(Matchers.nullValue())
+            )
+            .andDo(print());
+
+        assertThat(user.getBookmarks()).doesNotContain(target);
     }
 
 }

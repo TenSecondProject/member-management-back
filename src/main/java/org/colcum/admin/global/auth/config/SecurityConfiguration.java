@@ -1,7 +1,7 @@
 package org.colcum.admin.global.auth.config;
 
 import lombok.RequiredArgsConstructor;
-import org.colcum.admin.domain.user.domain.UserType;
+import org.colcum.admin.domain.user.domain.type.UserType;
 import org.colcum.admin.global.auth.api.AuthenticationFailureHandler;
 import org.colcum.admin.global.auth.api.AuthenticationSuccessHandler;
 import org.colcum.admin.global.auth.api.LoggingFilter;

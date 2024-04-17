@@ -1,6 +1,7 @@
 package org.colcum.admin.domain.post.application;
 
 import lombok.RequiredArgsConstructor;
+import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
@@ -11,7 +12,9 @@ import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
+import org.colcum.admin.domain.user.dao.UserRepository;
 import org.colcum.admin.domain.user.domain.UserEntity;
+import org.colcum.admin.domain.user.domain.vo.Bookmark;
 import org.colcum.admin.global.Error.InvalidAuthenticationException;
 import org.colcum.admin.global.Error.PostNotFoundException;
 import org.springframework.data.domain.Page;
@@ -26,6 +29,8 @@ import java.util.List;
 public class PostService {
 
     private final PostRepository postRepository;
+
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public Page<PostResponseDto> findByCriteria(SearchType searchType, String searchValue, List<PostCategory> categories, List<PostStatus> statuses, Pageable pageable) {
@@ -76,6 +81,23 @@ public class PostService {
         }
         post.delete();
         postRepository.save(post);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostBookmarkedResponse> findBookmarkedPosts(UserEntity user) {
+        return postRepository.findWithBookmarked(user.getId());
+    }
+
+    @Transactional
+    public void addBookmark(Long postId, UserEntity user) {
+        user.addBookmark(new Bookmark(postId));
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void removeBookmark(Long postId, UserEntity user) {
+        user.removeBookmark(new Bookmark(postId));
+        userRepository.save(user);
     }
 
 }

@@ -1,4 +1,4 @@
-package org.colcum.admin.domain.user.domain;
+package org.colcum.admin.domain.user.domain.type;
 
 import lombok.Getter;
 
