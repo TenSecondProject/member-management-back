@@ -9,7 +9,6 @@ import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.user.domain.UserEntity;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data

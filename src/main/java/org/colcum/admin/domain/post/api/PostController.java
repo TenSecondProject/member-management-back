@@ -1,6 +1,7 @@
 package org.colcum.admin.domain.post.api;
 
 import lombok.RequiredArgsConstructor;
+import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
@@ -147,6 +148,20 @@ public class PostController {
         }
         postService.removeBookmark(postId, authentication.userEntity);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
+    }
+
+    @PostMapping("/{postId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<Long> addComment(
+        @PathVariable(value = "postId") Long postId,
+        @RequestBody CommentCreateRequestDto dto,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        Long commentId = postService.addComment(postId, dto, authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.CREATED.value(), "created", commentId);
     }
 
 }
