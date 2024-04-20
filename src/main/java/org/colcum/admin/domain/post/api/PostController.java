@@ -1,6 +1,8 @@
 package org.colcum.admin.domain.post.api;
 
 import lombok.RequiredArgsConstructor;
+import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
+import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
@@ -21,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -146,6 +149,47 @@ public class PostController {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
         postService.removeBookmark(postId, authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
+    }
+
+    @PostMapping("/{postId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<Long> addComment(
+        @PathVariable(value = "postId") Long postId,
+        @RequestBody CommentCreateRequestDto dto,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        Long commentId = postService.addComment(postId, dto, authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.CREATED.value(), "created", commentId);
+    }
+
+    @PutMapping("/{postId}/comments/{commentId}")
+    public ApiResponse<Long> updatedComment(
+        @PathVariable(value = "postId") Long postId,
+        @PathVariable(value = "commentId") Long commentId,
+        @RequestBody CommentUpdateRequestDto dto,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        Long updateCommentId = postService.updateComment(commentId, dto, authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", updateCommentId);
+    }
+
+    @DeleteMapping("/{postId}/comments/{commentId}")
+    public ApiResponse<Void> deleteComment(
+        @PathVariable(value = "postId") Long postId,
+        @PathVariable(value = "commentId") Long commentId,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        postService.deleteComment(commentId, authentication.userEntity);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
     }
 

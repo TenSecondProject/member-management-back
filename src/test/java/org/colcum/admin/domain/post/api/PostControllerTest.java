@@ -1,7 +1,10 @@
 package org.colcum.admin.domain.post.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
+import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
@@ -9,7 +12,6 @@ import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.application.PostService;
-import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
@@ -24,7 +26,6 @@ import org.colcum.admin.global.common.IsNullOrType;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.stubbing.OngoingStubbing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -42,7 +43,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.colcum.admin.global.util.Fixture.createFixturePost;
 import static org.colcum.admin.global.util.Fixture.createFixtureUser;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -234,7 +234,7 @@ class PostControllerTest extends AbstractRestDocsTest {
             now,
             "tester",
             now,
-            List.of(CommentResponseDto.of("commentTester", now.toLocalDate(), "commentContent")),
+            List.of(CommentResponseDto.of(1L, "commentTester", now.toLocalDate(), "commentContent")),
             List.of(EmojiResponseDto.of("\uD83D\uDE00", 1, List.of("tester2")))
         );
 
@@ -471,6 +471,91 @@ class PostControllerTest extends AbstractRestDocsTest {
             .andDo(print());
 
         assertThat(user.getBookmarks()).doesNotContain(target);
+    }
+
+    @Test
+    @DisplayName("게시글에 댓글을 생성한다.")
+    @WithMockJwtAuthentication
+    void addCommentOnPost() throws Exception {
+        // given
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+        CommentCreateRequestDto dto = new CommentCreateRequestDto("title");
+        Long commentId = 1L;
+        Long postId = 1L;
+
+        // when
+        when(postService.addComment(postId, dto, user)).thenReturn(commentId);
+
+        // then
+        this.mockMvc
+            .perform(
+                post(MessageFormat.format("/api/v1/posts/{0}/comments", postId))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(dto))
+            )
+            .andExpectAll(
+                status().isCreated(),
+                jsonPath("$.statusCode").value(HttpStatus.CREATED.value()),
+                jsonPath("$.message").value("created"),
+                jsonPath("$.data").value(commentId)
+            )
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("게시글에 댓글을 수정한다.")
+    @WithMockJwtAuthentication
+    void updateCommentOnPost() throws Exception {
+        // given
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+        CommentUpdateRequestDto dto = new CommentUpdateRequestDto("title");
+        Long commentId = 1L;
+        Long postId = 1L;
+
+        // when
+        when(postService.updateComment(commentId, dto, user)).thenReturn(commentId);
+
+        // then
+        this.mockMvc
+            .perform(
+                put(MessageFormat.format("/api/v1/posts/{0}/comments/{1}", postId, commentId))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(dto))
+            )
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data").value(commentId)
+            )
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("게시글에 댓글을 삭제한다.")
+    @WithMockJwtAuthentication
+    void deleteCommentOnPost() throws Exception {
+        // given
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+        Long commentId = 1L;
+        Long postId = 1L;
+
+        // when
+        doNothing().when(postService).deleteComment(commentId, user);
+
+        // then
+        this.mockMvc
+            .perform(
+                delete(MessageFormat.format("/api/v1/posts/{0}/comments/{1}", postId, commentId))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data").value(Matchers.nullValue())
+            )
+            .andDo(print());
     }
 
 }

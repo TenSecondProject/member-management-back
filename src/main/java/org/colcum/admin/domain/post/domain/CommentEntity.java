@@ -11,10 +11,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.common.domain.BaseEntity;
 
@@ -29,6 +29,9 @@ public class CommentEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 500, nullable = false)
+    private String content;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private UserEntity user;
@@ -37,17 +40,19 @@ public class CommentEntity extends BaseEntity {
     @JoinColumn(name = "post_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private PostEntity postEntity;
 
-    @Column(length = 500, nullable = false)
-    private String content;
-
-    public CommentEntity(UserEntity user, PostEntity postEntity, String content) {
+    public CommentEntity(String content, UserEntity user, PostEntity postEntity) {
+        this.content = content;
         this.user = user;
         this.postEntity = postEntity;
-        this.content = content;
     }
 
     public void setPostEntity(PostEntity postEntity) {
         this.postEntity = postEntity;
+    }
+
+    public CommentEntity update(CommentUpdateRequestDto dto) {
+        this.content = dto.getContent();
+        return this;
     }
 
 }

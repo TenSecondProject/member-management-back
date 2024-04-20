@@ -27,7 +27,7 @@ public class Fixture {
     }
 
     public static CommentEntity createFixtureComment(UserEntity user, PostEntity post, String content) {
-        return new CommentEntity(user, post, content);
+        return new CommentEntity(content, user, post);
     }
 
     public static EmojiReactionEntity createFixtureEmoji(UserEntity user, PostEntity post, String emoji) {
