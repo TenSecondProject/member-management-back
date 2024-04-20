@@ -69,7 +69,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             .innerJoin(postEntity.user, userEntity)
             .fetchJoin()
             .where(postEntity.id.eq(id)
-                .and(postEntity.isDeleted.eq(false))
+                .and(postEntity.deleted.eq(false))
             )
             .fetchOne());
     }
@@ -79,10 +79,10 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
         return Optional.ofNullable(
             queryFactory
                 .selectFrom(postEntity)
-                .innerJoin(postEntity.commentEntities, commentEntity).fetchJoin()
+                .leftJoin(postEntity.commentEntities, commentEntity).fetchJoin()
                 .where(postEntity.id.eq(id)
-                    .and(postEntity.isDeleted.eq(false))
-                    .and(commentEntity.isDeleted.eq(false))
+                    .and(postEntity.deleted.eq(false))
+                    .and(commentEntity.deleted.eq(false).or(commentEntity.deleted.isNull()))
                 )
                 .distinct()
                 .fetchOne()
@@ -126,7 +126,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
                 case WRITTEN_USER -> builder.and(postEntity.createdBy.contains(condition.getSearchValue()));
             }
         }
-        return builder.and(postEntity.isDeleted.eq(false));
+        return builder.and(postEntity.deleted.eq(false));
     }
 
 }

@@ -9,6 +9,7 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import lombok.Getter;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -40,7 +41,7 @@ public abstract class BaseEntity {
     private String modifiedBy;
 
     @Column(nullable = false)
-    private boolean isDeleted = false;
+    private boolean deleted = false;
 
     @PrePersist
     public void prePersist() {
@@ -55,7 +56,7 @@ public abstract class BaseEntity {
     }
 
     public void delete() {
-        this.isDeleted = true;
+        this.deleted = true;
     }
 
 }
