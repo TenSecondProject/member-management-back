@@ -115,9 +115,13 @@ public class PostService {
     }
 
     @Transactional
-    public Long updateComment(Long commentId, CommentUpdateRequestDto dto) {
+    public Long updateComment(Long commentId, CommentUpdateRequestDto dto, UserEntity userEntity) {
         CommentEntity comment = commentRepository.findByIdAndDeletedIsFalse(commentId)
             .orElseThrow(() -> new CommentNotFoundException("해당 댓글은 찾을 수 없습니다."));
+
+        if (!comment.getUser().getId().equals(userEntity.getId())) {
+            throw new InvalidAuthenticationException("댓글 수정은 댓글 최초 작성자만 가능합니다.");
+        }
 
         CommentEntity updatedComment = comment.update(dto);
         return updatedComment.getId();

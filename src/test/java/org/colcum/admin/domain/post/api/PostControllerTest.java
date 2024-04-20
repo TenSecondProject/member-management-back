@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
+import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
@@ -496,6 +497,35 @@ class PostControllerTest extends AbstractRestDocsTest {
                 status().isCreated(),
                 jsonPath("$.statusCode").value(HttpStatus.CREATED.value()),
                 jsonPath("$.message").value("created"),
+                jsonPath("$.data").value(commentId)
+            )
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("게시글에 댓글을 수정한다.")
+    @WithMockJwtAuthentication
+    void updateCommentOnPost() throws Exception {
+        // given
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+        CommentUpdateRequestDto dto = new CommentUpdateRequestDto("title");
+        Long commentId = 1L;
+        Long postId = 1L;
+
+        // when
+        when(postService.updateComment(commentId, dto, user)).thenReturn(commentId);
+
+        // then
+        this.mockMvc
+            .perform(
+                put(MessageFormat.format("/api/v1/posts/{0}/comments/{1}", postId, commentId))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(dto))
+            )
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
                 jsonPath("$.data").value(commentId)
             )
             .andDo(print());

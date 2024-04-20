@@ -26,7 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.convert.DataSizeUnit;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,7 +35,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.colcum.admin.global.util.Fixture.createFixtureComment;
@@ -509,7 +507,7 @@ class PostServiceTest {
         CommentUpdateRequestDto dto = new CommentUpdateRequestDto("updatedComment");
 
         // when
-        Long updateCommentId = postService.updateComment(comment.getId(), dto);
+        Long updateCommentId = postService.updateComment(comment.getId(), dto, user);
         CommentEntity updatedComment = commentRepository.findById(updateCommentId).get();
 
         // then
