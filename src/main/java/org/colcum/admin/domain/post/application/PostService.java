@@ -2,6 +2,7 @@ package org.colcum.admin.domain.post.application;
 
 import lombok.RequiredArgsConstructor;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
+import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
@@ -18,6 +19,7 @@ import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.domain.user.dao.UserRepository;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.domain.user.domain.vo.Bookmark;
+import org.colcum.admin.global.Error.CommentNotFoundException;
 import org.colcum.admin.global.Error.InvalidAuthenticationException;
 import org.colcum.admin.global.Error.PostNotFoundException;
 import org.springframework.data.domain.Page;
@@ -110,6 +112,15 @@ public class PostService {
         CommentEntity comment = dto.toEntity(user, post);
         comment = commentRepository.save(commentRepository.save(comment));
         return comment.getId();
+    }
+
+    @Transactional
+    public Long updateComment(Long commentId, CommentUpdateRequestDto dto) {
+        CommentEntity comment = commentRepository.findByIdAndDeletedIsFalse(commentId)
+            .orElseThrow(() -> new CommentNotFoundException("해당 댓글은 찾을 수 없습니다."));
+
+        CommentEntity updatedComment = comment.update(dto);
+        return updatedComment.getId();
     }
 
 }

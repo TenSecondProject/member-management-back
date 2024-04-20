@@ -2,6 +2,7 @@ package org.colcum.admin.domain.post.application;
 
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
+import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.colcum.admin.global.util.Fixture.createFixtureComment;
 import static org.colcum.admin.global.util.Fixture.createFixturePost;
 import static org.colcum.admin.global.util.Fixture.createFixtureUser;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -496,5 +498,25 @@ class PostServiceTest {
         PostDetailResponseDto response = postService.inquirePostDetail(post.getId());
         assertThat(response.getCommentResponseDtos().stream().map(CommentResponseDto::getId)).contains(commentId);
     }
+
+    @Test
+    @DisplayName("게시글을 수정한다")
+    void updateCommentInPost() {
+        // given
+        PostEntity post = Fixture.createFixturePost("title1", "content1", user);
+        post = postRepository.save(post);
+        CommentEntity comment = commentRepository.save(createFixtureComment(user, post, "comment"));
+        CommentUpdateRequestDto dto = new CommentUpdateRequestDto("updatedComment");
+
+        // when
+        Long updateCommentId = postService.updateComment(comment.getId(), dto);
+        CommentEntity updatedComment = commentRepository.findById(updateCommentId).get();
+
+        // then
+        assertThat(updatedComment.getContent()).isEqualTo(dto.getContent());
+        assertThat(updatedComment.getCreatedAt().truncatedTo(ChronoUnit.MILLIS)).isEqualTo(comment.getCreatedAt().truncatedTo(ChronoUnit.MILLIS));
+        assertThat(updatedComment.getModifiedAt()).isNotEqualTo(comment.getModifiedAt());
+    }
+
 
 }

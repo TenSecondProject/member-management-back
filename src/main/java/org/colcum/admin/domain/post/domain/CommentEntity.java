@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.common.domain.BaseEntity;
 
@@ -48,6 +49,11 @@ public class CommentEntity extends BaseEntity {
 
     public void setPostEntity(PostEntity postEntity) {
         this.postEntity = postEntity;
+    }
+
+    public CommentEntity update(CommentUpdateRequestDto dto) {
+        this.content = dto.getContent();
+        return this;
     }
 
 }
