@@ -19,6 +19,7 @@ import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.domain.user.dao.UserRepository;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.domain.user.domain.vo.Bookmark;
+import org.colcum.admin.global.Error.CommentNotFoundException;
 import org.colcum.admin.global.Error.PostNotFoundException;
 import org.colcum.admin.global.util.Fixture;
 import org.junit.jupiter.api.AfterEach;
@@ -498,7 +499,7 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("게시글을 수정한다")
+    @DisplayName("게시글에 댓글을 수정한다")
     void updateCommentInPost() {
         // given
         PostEntity post = Fixture.createFixturePost("title1", "content1", user);
@@ -516,5 +517,21 @@ class PostServiceTest {
         assertThat(updatedComment.getModifiedAt()).isNotEqualTo(comment.getModifiedAt());
     }
 
+    @Test
+    @DisplayName("게시글의 댓글을 삭제한다.")
+    void deleteCommentInPost() {
+        // given
+        PostEntity post = Fixture.createFixturePost("title1", "content1", user);
+        post = postRepository.save(post);
+        CommentEntity comment = commentRepository.save(createFixtureComment(user, post, "comment"));
+        comment = commentRepository.save(comment);
+        final Long commentId = comment.getId();
+
+        // when
+        postService.deleteComment(commentId, user);
+
+        // then
+        assertThrows(CommentNotFoundException.class, () -> postService.findCommentEntity(commentId));
+    }
 
 }

@@ -180,4 +180,17 @@ public class PostController {
         return new ApiResponse<>(HttpStatus.OK.value(), "success", updateCommentId);
     }
 
+    @DeleteMapping("/{postId}/comments/{commentId}")
+    public ApiResponse<Void> deleteComment(
+        @PathVariable(value = "postId") Long postId,
+        @PathVariable(value = "commentId") Long commentId,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        postService.deleteComment(commentId, authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
+    }
+
 }

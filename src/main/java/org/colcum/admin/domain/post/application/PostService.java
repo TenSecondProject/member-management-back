@@ -104,6 +104,12 @@ public class PostService {
         userRepository.save(user);
     }
 
+    @Transactional(readOnly = true)
+    public CommentEntity findCommentEntity(Long commentId) {
+        return commentRepository.findByIdAndDeletedIsFalse(commentId)
+            .orElseThrow(() -> new CommentNotFoundException("해당 댓글은 찾을 수 없습니다."));
+    }
+
     @Transactional
     public Long addComment(Long postId, CommentCreateRequestDto dto, UserEntity user) {
         PostEntity post = postRepository.findById(postId).orElseThrow(() -> {
@@ -115,16 +121,25 @@ public class PostService {
     }
 
     @Transactional
-    public Long updateComment(Long commentId, CommentUpdateRequestDto dto, UserEntity userEntity) {
-        CommentEntity comment = commentRepository.findByIdAndDeletedIsFalse(commentId)
-            .orElseThrow(() -> new CommentNotFoundException("해당 댓글은 찾을 수 없습니다."));
+    public Long updateComment(Long commentId, CommentUpdateRequestDto dto, UserEntity user) {
+        CommentEntity comment = findCommentEntity(commentId);
 
-        if (!comment.getUser().getId().equals(userEntity.getId())) {
+        if (!comment.getUser().getId().equals(user.getId())) {
             throw new InvalidAuthenticationException("댓글 수정은 댓글 최초 작성자만 가능합니다.");
         }
-
         CommentEntity updatedComment = comment.update(dto);
         return updatedComment.getId();
+    }
+
+    @Transactional
+    public void deleteComment(Long commentId, UserEntity user) {
+        CommentEntity comment = findCommentEntity(commentId);
+
+        if (!comment.getUser().getId().equals(user.getId())) {
+            throw new InvalidAuthenticationException("댓글 수정은 댓글 최초 작성자만 가능합니다.");
+        }
+        comment.delete();
+        commentRepository.save(comment);
     }
 
 }

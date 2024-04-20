@@ -531,4 +531,31 @@ class PostControllerTest extends AbstractRestDocsTest {
             .andDo(print());
     }
 
+    @Test
+    @DisplayName("게시글에 댓글을 삭제한다.")
+    @WithMockJwtAuthentication
+    void deleteCommentOnPost() throws Exception {
+        // given
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+        Long commentId = 1L;
+        Long postId = 1L;
+
+        // when
+        doNothing().when(postService).deleteComment(commentId, user);
+
+        // then
+        this.mockMvc
+            .perform(
+                delete(MessageFormat.format("/api/v1/posts/{0}/comments/{1}", postId, commentId))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data").value(Matchers.nullValue())
+            )
+            .andDo(print());
+    }
+
 }
