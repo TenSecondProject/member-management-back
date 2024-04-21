@@ -9,10 +9,13 @@ import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
+import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
 import org.colcum.admin.domain.post.dao.CommentRepository;
 import org.colcum.admin.domain.post.dao.PostRepository;
 import org.colcum.admin.domain.post.domain.CommentEntity;
+import org.colcum.admin.domain.post.domain.DirectedPost;
 import org.colcum.admin.domain.post.domain.PostEntity;
+import org.colcum.admin.domain.post.dao.DirectedPostRepository;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
@@ -60,6 +63,9 @@ class PostServiceTest {
 
     @Autowired
     private CommentRepository commentRepository;
+
+    @Autowired
+    private DirectedPostRepository directedPostRepository;
 
     @BeforeEach
     void setup() {
@@ -532,6 +538,25 @@ class PostServiceTest {
 
         // then
         assertThrows(CommentNotFoundException.class, () -> postService.findCommentEntity(commentId));
+    }
+
+    @Test
+    @DisplayName("수신함 내의 게시글을 조회한다.")
+    void inquirePostsInReceiveBox() {
+        // given
+        PostEntity post = createFixturePost("title", "content", user);
+        postRepository.save(post);
+        DirectedPost directedPost = new DirectedPost(post, user);
+        directedPostRepository.save(directedPost);
+
+        // when
+        List<ReceivedPostSummaryResponseDto> receivedPostSummaryDto = postService.findReceivedPostByReceiverId(user.getId());
+
+        // then
+        assertThat(receivedPostSummaryDto.size()).isEqualTo(1);
+        assertThat(receivedPostSummaryDto.get(0).getUserId()).isEqualTo(user.getId());
+        assertThat(receivedPostSummaryDto.get(0).getUsername()).isEqualTo(user.getName());
+        assertThat(receivedPostSummaryDto.get(0).getUnReadPostCount()).isEqualTo(1);
     }
 
 }
