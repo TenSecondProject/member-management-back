@@ -147,8 +147,17 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReceivedPostSummaryResponseDto> findReceivedPostByReceiverId(Long receivedUserId) {
+    public List<ReceivedPostSummaryResponseDto> findReceivedPostSummary(Long receivedUserId) {
         return directedPostRepository.findDirectedPostByReceiverId(receivedUserId);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<PostResponseDto> findReceivedPosts(SearchType searchType, String searchValue, List<PostStatus> statuses, UserEntity receivedUser, Pageable pageable) {
+        return postRepository.searchReceivedPost(
+            new PostSearchCondition(searchType, searchValue, List.of(PostCategory.DELIVERY), statuses),
+            receivedUser,
+            pageable
+        );
     }
 
 }

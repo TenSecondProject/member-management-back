@@ -10,19 +10,19 @@ import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
 import org.colcum.admin.domain.post.domain.PostEntity;
-import org.colcum.admin.domain.user.domain.vo.Bookmark;
-import org.colcum.admin.domain.user.domain.vo.QBookmark;
+import org.colcum.admin.domain.post.domain.type.PostCategory;
+import org.colcum.admin.domain.user.domain.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import static org.colcum.admin.domain.post.domain.QCommentEntity.commentEntity;
+import static org.colcum.admin.domain.post.domain.QDirectedPost.directedPost;
 import static org.colcum.admin.domain.post.domain.QEmojiReactionEntity.emojiReactionEntity;
 import static org.colcum.admin.domain.post.domain.QPostEntity.postEntity;
 import static org.colcum.admin.domain.user.domain.QUserEntity.userEntity;
@@ -36,8 +36,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
 
     @Override
     public Page<PostResponseDto> search(PostSearchCondition condition, Pageable pageable) {
-        BooleanBuilder builder = getBooleanBuilder(condition);
-
+        BooleanBuilder builder = getPostBooleanBuilder(condition);
         List<PostEntity> fetch = queryFactory
             .select(postEntity)
             .from(postEntity)
@@ -45,6 +44,34 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             .leftJoin(postEntity.commentEntities, commentEntity)
             .leftJoin(postEntity.emojiReactionEntities, emojiReactionEntity).fetchJoin()
             .where(builder)
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .groupBy(postEntity.id)
+            .fetch();
+
+        List<PostResponseDto> dtos = fetch.stream()
+            .map(PostResponseDto::from)
+            .toList();
+
+        JPAQuery<Long> count = queryFactory
+            .select(postEntity.count())
+            .from(postEntity)
+            .where(builder);
+
+        return PageableExecutionUtils.getPage(dtos, pageable, count::fetchCount);
+    }
+
+    @Override
+    public Page<PostResponseDto> searchReceivedPost(PostSearchCondition condition, UserEntity receivedUser, Pageable pageable) {
+        BooleanBuilder builder = getPostBooleanBuilder(condition);
+        List<PostEntity> fetch = queryFactory
+            .select(postEntity)
+            .from(directedPost)
+            .innerJoin(directedPost.postEntity, postEntity)
+            .innerJoin(postEntity.user, userEntity)
+            .leftJoin(postEntity.commentEntities, commentEntity)
+            .leftJoin(postEntity.emojiReactionEntities, emojiReactionEntity).fetchJoin()
+            .where(builder.and(directedPost.receiver.id.eq(receivedUser.getId())))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .groupBy(postEntity.id)
@@ -111,7 +138,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             .fetch();
     }
 
-    private static BooleanBuilder getBooleanBuilder(PostSearchCondition condition) {
+    private static BooleanBuilder getPostBooleanBuilder(PostSearchCondition condition) {
         BooleanBuilder builder = new BooleanBuilder();
         if (Objects.nonNull(condition.getCategories()) && condition.getCategories().size() > 0) {
             builder.and(postEntity.category.in(condition.getCategories()));

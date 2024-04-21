@@ -42,6 +42,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.colcum.admin.global.util.Fixture.createFixtureComment;
+import static org.colcum.admin.global.util.Fixture.createFixtureDirectedPost;
 import static org.colcum.admin.global.util.Fixture.createFixturePost;
 import static org.colcum.admin.global.util.Fixture.createFixtureUser;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -541,8 +542,8 @@ class PostServiceTest {
     }
 
     @Test
-    @DisplayName("수신함 내의 게시글을 조회한다.")
-    void inquirePostsInReceiveBox() {
+    @DisplayName("수신함 요약을 조회한다.")
+    void inquirePostsSummaryInReceiveBox() {
         // given
         PostEntity post = createFixturePost("title", "content", user);
         postRepository.save(post);
@@ -550,13 +551,31 @@ class PostServiceTest {
         directedPostRepository.save(directedPost);
 
         // when
-        List<ReceivedPostSummaryResponseDto> receivedPostSummaryDto = postService.findReceivedPostByReceiverId(user.getId());
+        List<ReceivedPostSummaryResponseDto> receivedPostSummaryDto = postService.findReceivedPostSummary(user.getId());
 
         // then
         assertThat(receivedPostSummaryDto.size()).isEqualTo(1);
         assertThat(receivedPostSummaryDto.get(0).getUserId()).isEqualTo(user.getId());
         assertThat(receivedPostSummaryDto.get(0).getUsername()).isEqualTo(user.getName());
         assertThat(receivedPostSummaryDto.get(0).getUnReadPostCount()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("수신함을 조회한다.")
+    void inquirePostsInReceiveBox() {
+        // given
+        PostEntity post = createFixtureDirectedPost("title", "content", user);
+        postRepository.save(post);
+        DirectedPost directedPost = new DirectedPost(post, user);
+        directedPostRepository.save(directedPost);
+
+        // when
+        Page<PostResponseDto> posts = postService.findReceivedPosts(null, null, null, user, PageRequest.ofSize(10));
+
+        // then
+        assertThat(posts.getContent().size()).isEqualTo(1);
+        assertThat(posts.getSize()).isEqualTo(10);
+        assertThat(posts.getContent()).contains(PostResponseDto.from(post));
     }
 
 }
