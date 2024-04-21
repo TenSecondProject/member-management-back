@@ -304,7 +304,8 @@ class PostControllerTest extends AbstractRestDocsTest {
             "content",
             PostCategory.ANNOUNCEMENT,
             PostStatus.IN_PROGRESS,
-            LocalDateTime.now()
+            LocalDateTime.now(),
+            null
         );
 
         UserEntity user = createFixtureUser();
