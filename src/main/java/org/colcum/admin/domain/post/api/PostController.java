@@ -8,6 +8,7 @@ import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
+import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
 import org.colcum.admin.domain.post.application.PostService;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
@@ -23,7 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -167,6 +167,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.OK)
     public ApiResponse<Long> updatedComment(
         @PathVariable(value = "postId") Long postId,
         @PathVariable(value = "commentId") Long commentId,
@@ -181,6 +182,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{postId}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.OK)
     public ApiResponse<Void> deleteComment(
         @PathVariable(value = "postId") Long postId,
         @PathVariable(value = "commentId") Long commentId,
@@ -193,4 +195,15 @@ public class PostController {
         return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
     }
 
+    @GetMapping("/received")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<ReceivedPostSummaryResponseDto>> getReceivedPostSummary(
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        List<ReceivedPostSummaryResponseDto> dtos = postService.findReceivedPostByReceiverId(authentication.userEntity.getId());
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", dtos);
+    }
 }

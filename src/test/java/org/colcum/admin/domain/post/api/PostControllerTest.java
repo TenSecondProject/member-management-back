@@ -11,6 +11,7 @@ import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
+import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
 import org.colcum.admin.domain.post.application.PostService;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
@@ -554,6 +555,33 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.statusCode").value(HttpStatus.OK.value()),
                 jsonPath("$.message").value("success"),
                 jsonPath("$.data").value(Matchers.nullValue())
+            )
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("수신 게시글의 요약을 조회한다.")
+    @WithMockJwtAuthentication
+    void inquireReceivedPostSummary() throws Exception {
+        // given
+        Long unreadPostsCount = 3L;
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+        List<ReceivedPostSummaryResponseDto> responses = List.of(new ReceivedPostSummaryResponseDto(user.getId(), user.getName(), unreadPostsCount));
+
+        // when
+        when(postService.findReceivedPostByReceiverId(user.getId())).thenReturn(responses);
+
+        // then
+        this.mockMvc
+            .perform(
+                get("/api/v1/posts/received"))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data[0].userId").value(responses.get(0).getUserId()),
+                jsonPath("$.data[0].username").value(responses.get(0).getUsername()),
+                jsonPath("$.data[0].unReadPostCount").value(responses.get(0).getUnReadPostCount())
             )
             .andDo(print());
     }
