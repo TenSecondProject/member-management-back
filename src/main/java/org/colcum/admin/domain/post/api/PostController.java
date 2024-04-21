@@ -56,6 +56,9 @@ public class PostController {
         if (Objects.isNull(authentication)) {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
+        if (categories.contains(PostCategory.DELIVERY)) {
+            throw new IllegalArgumentException("공지사항에는 Direct Post가 조회되지 않습니다.");
+        }
         Page<PostResponseDto> responses = postService.findByCriteria(searchType, searchValue, categories, statuses, pageable);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
     }
@@ -195,7 +198,7 @@ public class PostController {
         return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
     }
 
-    @GetMapping("/received")
+    @GetMapping("/received/summary")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<List<ReceivedPostSummaryResponseDto>> getReceivedPostSummary(
         @AuthenticationPrincipal JwtAuthentication authentication
@@ -203,7 +206,24 @@ public class PostController {
         if (Objects.isNull(authentication)) {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
-        List<ReceivedPostSummaryResponseDto> dtos = postService.findReceivedPostByReceiverId(authentication.userEntity.getId());
+        List<ReceivedPostSummaryResponseDto> dtos = postService.findReceivedPostSummary(authentication.userEntity.getId());
         return new ApiResponse<>(HttpStatus.OK.value(), "success", dtos);
     }
+
+    @GetMapping("/received")
+    @ResponseStatus(value = HttpStatus.OK)
+    public ApiResponse<Page<PostResponseDto>> inquireReceivedPosts(
+        @RequestParam(name = "searchType",  required = false) SearchType searchType,
+        @RequestParam(name = "searchValue", required = false) String searchValue,
+        @RequestParam(name = "status",      required = false) List<PostStatus> statuses,
+        @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        Page<PostResponseDto> responses = postService.findReceivedPosts(searchType, searchValue, statuses, authentication.userEntity, pageable);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
+    }
+
 }

@@ -1,6 +1,5 @@
 package org.colcum.admin.domain.post.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
@@ -569,12 +568,12 @@ class PostControllerTest extends AbstractRestDocsTest {
         List<ReceivedPostSummaryResponseDto> responses = List.of(new ReceivedPostSummaryResponseDto(user.getId(), user.getName(), unreadPostsCount));
 
         // when
-        when(postService.findReceivedPostByReceiverId(user.getId())).thenReturn(responses);
+        when(postService.findReceivedPostSummary(user.getId())).thenReturn(responses);
 
         // then
         this.mockMvc
             .perform(
-                get("/api/v1/posts/received"))
+                get("/api/v1/posts/received/summary"))
             .andExpectAll(
                 status().isOk(),
                 jsonPath("$.statusCode").value(HttpStatus.OK.value()),
