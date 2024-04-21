@@ -14,6 +14,7 @@ import org.colcum.admin.domain.post.dao.CommentRepository;
 import org.colcum.admin.domain.post.dao.PostRepository;
 import org.colcum.admin.domain.post.dao.DirectedPostRepository;
 import org.colcum.admin.domain.post.domain.CommentEntity;
+import org.colcum.admin.domain.post.domain.DirectedPost;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +64,11 @@ public class PostService {
     @Transactional
     public PostEntity createPost(PostCreateDto dto, UserEntity user) {
         PostEntity postEntity = dto.toEntity(user);
-        return postRepository.save(postEntity);
+        postEntity = postRepository.save(postEntity);
+        if (Objects.nonNull(dto.getSendTargetUserIds()) && dto.getCategory().equals(PostCategory.DELIVERY)) {
+            createDirectedPosts(dto, postEntity, user);
+        }
+        return postEntity;
     }
 
     @Transactional
@@ -158,6 +164,13 @@ public class PostService {
             receivedUser,
             pageable
         );
+    }
+
+    private void createDirectedPosts(PostCreateDto dto, PostEntity post, UserEntity user) {
+        for (Long targetUserId: dto.getSendTargetUserIds()) {
+            DirectedPost directedPost = new DirectedPost(post, user);
+            directedPostRepository.save(directedPost);
+        }
     }
 
 }

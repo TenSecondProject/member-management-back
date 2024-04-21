@@ -310,7 +310,7 @@ class PostServiceTest {
     @DisplayName("게시글을 생성한다.")
     void createPost() {
         // given
-        PostCreateDto dto = new PostCreateDto("title", "content", PostCategory.ANNOUNCEMENT, PostStatus.COMPLETE, null);
+        PostCreateDto dto = new PostCreateDto("title", "content", PostCategory.ANNOUNCEMENT, PostStatus.COMPLETE, null, null);
 
         // when
         PostEntity result = postService.createPost(dto, user);
@@ -576,6 +576,26 @@ class PostServiceTest {
         assertThat(posts.getContent().size()).isEqualTo(1);
         assertThat(posts.getSize()).isEqualTo(10);
         assertThat(posts.getContent()).contains(PostResponseDto.from(post));
+    }
+
+    @Test
+    @DisplayName("게시글을 생성할 떄, 수신 대상이 있으면 Direct Post도 생성한다.")
+    void createDirectPost() {
+        // given
+        PostCreateDto dto = new PostCreateDto(
+            "title",
+            "content",
+            PostCategory.DELIVERY,
+            PostStatus.COMPLETE,
+            null,
+            List.of(user.getId()));
+
+        PostEntity post = postService.createPost(dto, user);
+        List<ReceivedPostSummaryResponseDto> result = directedPostRepository.findDirectedPostByReceiverId(user.getId());
+
+        assertThat(result.size()).isEqualTo(1);
+        assertThat(result.get(0).getUsername()).isEqualTo(user.getName());
+        assertThat(result.get(0).getUnReadPostCount()).isEqualTo(1);
     }
 
 }
