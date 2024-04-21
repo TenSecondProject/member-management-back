@@ -22,6 +22,10 @@ public class Fixture {
         return new PostEntity(title, content, postCategory, postStatus, expiredDate, user, comments, emojis);
     }
 
+    public static PostEntity createFixtureDirectedPost(String title, String content, UserEntity user) {
+        return createFixturePost(title, content, PostCategory.DELIVERY, PostStatus.UNCOMPLETED, null, user, new ArrayList<>(), new ArrayList<>());
+    }
+
     public static UserEntity createFixtureUser() {
         return new UserEntity("test@gmail.com", "1234", "tester", Branch.JONGRO);
     }

@@ -1,5 +1,6 @@
 package org.colcum.admin.domain.post.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ForeignKey;
@@ -11,7 +12,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -23,7 +23,7 @@ import org.colcum.admin.global.common.domain.BaseEntity;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @ToString
-public class SentPost extends BaseEntity {
+public class DirectedPost extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,9 +37,16 @@ public class SentPost extends BaseEntity {
     @JoinColumn(name = "receiver_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private UserEntity receiver;
 
-    public SentPost(PostEntity postEntity, UserEntity receiver) {
+    @Column(name = "is_raed")
+    private boolean isRead = false;
+
+    public DirectedPost(PostEntity postEntity, UserEntity receiver) {
         this.postEntity = postEntity;
         this.receiver = receiver;
+    }
+
+    void read() {
+        isRead = true;
     }
 
 }
