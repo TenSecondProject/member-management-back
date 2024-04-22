@@ -2,6 +2,7 @@ package org.colcum.admin.global.Error.handler;
 
 import org.colcum.admin.global.Error.EmailValidationException;
 import org.colcum.admin.global.Error.InvalidAuthenticationException;
+import org.colcum.admin.global.Error.NoTargetReceiverException;
 import org.colcum.admin.global.Error.PostNotFoundException;
 import org.colcum.admin.global.common.api.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = InvalidAuthenticationException.class)
     public ApiResponse<Void> handleInvalidAuthenticationException(InvalidAuthenticationException ex) {
         return new ApiResponse<>(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), null);
+    }
+
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(value = NoTargetReceiverException.class)
+    public ApiResponse<Void> handleNoTargetReceiverException(NoTargetReceiverException ex) {
+        return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), null);
     }
 
 }

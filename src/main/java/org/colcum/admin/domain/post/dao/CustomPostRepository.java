@@ -15,6 +15,8 @@ public interface CustomPostRepository {
 
     Page<PostResponseDto> search(PostSearchCondition condition, Pageable pageable);
 
+    Page<PostResponseDto> searchReceivedPost(PostSearchCondition postSearchCondition, UserEntity receivedUser, Pageable pageable);
+
     Optional<PostEntity> findByIdWithUser(Long userId);
 
     Optional<PostEntity> findByIdAndDeletedIsFalse(Long id);

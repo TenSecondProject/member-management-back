@@ -8,7 +8,9 @@ import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
+import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
 import org.colcum.admin.domain.post.application.PostService;
+import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
@@ -23,7 +25,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -56,6 +57,9 @@ public class PostController {
         if (Objects.isNull(authentication)) {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
+        if (Objects.nonNull(categories) && categories.contains(PostCategory.DELIVERY)) {
+            throw new IllegalArgumentException("공지사항에는 Direct Post가 조회되지 않습니다.");
+        }
         Page<PostResponseDto> responses = postService.findByCriteria(searchType, searchValue, categories, statuses, pageable);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
     }
@@ -76,7 +80,7 @@ public class PostController {
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    public ApiResponse<String> createPost(
+    public ApiResponse<Void> createPost(
         @RequestBody PostCreateDto dto,
         @AuthenticationPrincipal JwtAuthentication authentication
     ) {
@@ -167,6 +171,7 @@ public class PostController {
     }
 
     @PutMapping("/{postId}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.OK)
     public ApiResponse<Long> updatedComment(
         @PathVariable(value = "postId") Long postId,
         @PathVariable(value = "commentId") Long commentId,
@@ -181,6 +186,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{postId}/comments/{commentId}")
+    @ResponseStatus(HttpStatus.OK)
     public ApiResponse<Void> deleteComment(
         @PathVariable(value = "postId") Long postId,
         @PathVariable(value = "commentId") Long commentId,
@@ -191,6 +197,34 @@ public class PostController {
         }
         postService.deleteComment(commentId, authentication.userEntity);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
+    }
+
+    @GetMapping("/received/summary")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<ReceivedPostSummaryResponseDto>> getReceivedPostSummary(
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        List<ReceivedPostSummaryResponseDto> dtos = postService.findReceivedPostSummary(authentication.userEntity.getId());
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", dtos);
+    }
+
+    @GetMapping("/received")
+    @ResponseStatus(value = HttpStatus.OK)
+    public ApiResponse<Page<PostResponseDto>> inquireReceivedPosts(
+        @RequestParam(name = "searchType",  required = false) SearchType searchType,
+        @RequestParam(name = "searchValue", required = false) String searchValue,
+        @RequestParam(name = "status",      required = false) List<PostStatus> statuses,
+        @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        Page<PostResponseDto> responses = postService.findReceivedPosts(searchType, searchValue, statuses, authentication.userEntity, pageable);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
     }
 
 }

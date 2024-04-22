@@ -16,7 +16,7 @@ public class SecurityAuditorAware implements AuditorAware<String> {
             return Optional.of("unknown");
         }
         JwtAuthentication principal = (JwtAuthentication) authentication.getPrincipal();
-        return Optional.ofNullable(String.valueOf(principal.userEntity.getId()));
+        return Optional.ofNullable(String.valueOf(principal.userEntity.getEmail()));
     }
 
 }

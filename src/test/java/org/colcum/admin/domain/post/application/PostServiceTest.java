@@ -9,10 +9,13 @@ import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
+import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
 import org.colcum.admin.domain.post.dao.CommentRepository;
 import org.colcum.admin.domain.post.dao.PostRepository;
 import org.colcum.admin.domain.post.domain.CommentEntity;
+import org.colcum.admin.domain.post.domain.DirectedPost;
 import org.colcum.admin.domain.post.domain.PostEntity;
+import org.colcum.admin.domain.post.dao.DirectedPostRepository;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
@@ -39,6 +42,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.colcum.admin.global.util.Fixture.createFixtureComment;
+import static org.colcum.admin.global.util.Fixture.createFixtureDirectedPost;
 import static org.colcum.admin.global.util.Fixture.createFixturePost;
 import static org.colcum.admin.global.util.Fixture.createFixtureUser;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -60,6 +64,9 @@ class PostServiceTest {
 
     @Autowired
     private CommentRepository commentRepository;
+
+    @Autowired
+    private DirectedPostRepository directedPostRepository;
 
     @BeforeEach
     void setup() {
@@ -303,7 +310,7 @@ class PostServiceTest {
     @DisplayName("게시글을 생성한다.")
     void createPost() {
         // given
-        PostCreateDto dto = new PostCreateDto("title", "content", PostCategory.ANNOUNCEMENT, PostStatus.COMPLETE, null);
+        PostCreateDto dto = new PostCreateDto("title", "content", PostCategory.ANNOUNCEMENT, PostStatus.COMPLETE, null, null);
 
         // when
         PostEntity result = postService.createPost(dto, user);
@@ -532,6 +539,63 @@ class PostServiceTest {
 
         // then
         assertThrows(CommentNotFoundException.class, () -> postService.findCommentEntity(commentId));
+    }
+
+    @Test
+    @DisplayName("수신함 요약을 조회한다.")
+    void inquirePostsSummaryInReceiveBox() {
+        // given
+        PostEntity post = createFixturePost("title", "content", user);
+        postRepository.save(post);
+        DirectedPost directedPost = new DirectedPost(post, user);
+        directedPostRepository.save(directedPost);
+
+        // when
+        List<ReceivedPostSummaryResponseDto> receivedPostSummaryDto = postService.findReceivedPostSummary(user.getId());
+
+        // then
+        assertThat(receivedPostSummaryDto.size()).isEqualTo(1);
+        assertThat(receivedPostSummaryDto.get(0).getUserId()).isEqualTo(user.getId());
+        assertThat(receivedPostSummaryDto.get(0).getUsername()).isEqualTo(user.getName());
+        assertThat(receivedPostSummaryDto.get(0).getUnReadPostCount()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("수신함을 조회한다.")
+    void inquirePostsInReceiveBox() {
+        // given
+        PostEntity post = createFixtureDirectedPost("title", "content", user);
+        postRepository.save(post);
+        DirectedPost directedPost = new DirectedPost(post, user);
+        directedPostRepository.save(directedPost);
+
+        // when
+        Page<PostResponseDto> posts = postService.findReceivedPosts(null, null, null, user, PageRequest.ofSize(10));
+
+        // then
+        assertThat(posts.getContent().size()).isEqualTo(1);
+        assertThat(posts.getSize()).isEqualTo(10);
+        assertThat(posts.getContent()).contains(PostResponseDto.from(post));
+    }
+
+    @Test
+    @DisplayName("게시글을 생성할 떄, 수신 대상이 있으면 Direct Post도 생성한다.")
+    void createDirectPost() {
+        // given
+        PostCreateDto dto = new PostCreateDto(
+            "title",
+            "content",
+            PostCategory.DELIVERY,
+            PostStatus.COMPLETE,
+            null,
+            List.of(user.getId()));
+
+        PostEntity post = postService.createPost(dto, user);
+        List<ReceivedPostSummaryResponseDto> result = directedPostRepository.findDirectedPostByReceiverId(user.getId());
+
+        assertThat(result.size()).isEqualTo(1);
+        assertThat(result.get(0).getUsername()).isEqualTo(user.getName());
+        assertThat(result.get(0).getUnReadPostCount()).isEqualTo(1);
     }
 
 }
