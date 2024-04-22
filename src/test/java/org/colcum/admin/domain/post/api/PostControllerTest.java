@@ -1,5 +1,6 @@
 package org.colcum.admin.domain.post.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
@@ -49,6 +50,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
@@ -584,6 +586,40 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.data[0].unReadPostCount").value(responses.get(0).getUnReadPostCount())
             )
             .andDo(print());
+    }
+
+    @Test
+    @DisplayName("DIRECT POST를 생성한다.")
+    @WithMockJwtAuthentication
+    void createDirectPost() throws Exception {
+        // given
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+
+        PostCreateDto dto = new PostCreateDto(
+            "title",
+            "content",
+            PostCategory.DELIVERY,
+            PostStatus.COMPLETE,
+            null,
+            List.of(1L));
+
+        // when
+        when(postService.createPost(dto, user)).thenReturn(null);
+
+        // then
+        this.mockMvc
+            .perform(
+                post("/api/v1/posts")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(dto)))
+            .andExpectAll(
+                status().isCreated(),
+                jsonPath("$.statusCode").value(HttpStatus.CREATED.value()),
+                jsonPath("$.message").value("created"),
+                jsonPath("$.data").value(Matchers.nullValue())
+            )
+            .andDo(print());
+
     }
 
 }

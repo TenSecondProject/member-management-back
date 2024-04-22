@@ -80,7 +80,7 @@ public class PostController {
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    public ApiResponse<String> createPost(
+    public ApiResponse<Void> createPost(
         @RequestBody PostCreateDto dto,
         @AuthenticationPrincipal JwtAuthentication authentication
     ) {
