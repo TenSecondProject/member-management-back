@@ -7,7 +7,7 @@
 
 == Post API
 
-=== GET : 게시글 전체 페이지를 조회한다.
+=== Get : 게시글 전체 페이지를 조회한다.
 Path : /api/v1/posts
 
 ==== Request
@@ -20,7 +20,7 @@ include::{snippets}/posts/query-parameters.adoc[0]
 include::{snippets}/post-controller-test/inquire-posts-with-parameters/http-response.adoc[]
 ---
 
-=== GET : 게시글 상세 페이지를 조회한다.
+=== Get : 게시글 상세 페이지를 조회한다.
 Path: /api/v1/posts/{postId}
 
 ==== Request
@@ -42,7 +42,7 @@ include::{snippets}/post-controller-test/create-post/http-request.adoc[]
 include::{snippets}/post-controller-test/create-post/http-response.adoc[]
 ---
 
-=== PUT : 게시글을 수정한다
+=== Put : 게시글을 수정한다
 Path: /api/v1/posts/{postId}
 
 ==== Path variable
@@ -55,7 +55,7 @@ include::{snippets}/post-controller-test/update-post/http-request.adoc[]
 include::{snippets}/post-controller-test/update-post/http-response.adoc[]
 ---
 
-==== Delete : 게시글을 삭제한다
+=== Delete : 게시글을 삭제한다
 Path: /api/v1/posts/{postId}
 
 ==== Path variable
@@ -66,3 +66,92 @@ include::{snippets}/post-controller-test/delete-post/http-request.adoc[]
 
 ==== Response
 include::{snippets}/post-controller-test/delete-post/http-response.adoc[]
+
+== Bookmark API
+
+=== Get : 북마크된 게시글들의 요약을 제공한다(화면 좌측 사이드바 API).
+Path : /api/v1/posts/bookmarks
+
+==== Request
+include::{snippets}/post-controller-test/inquire-posts-with-bookmarked/http-request.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/inquire-posts-with-bookmarked/http-response.adoc[]
+---
+
+=== Post : 특정 게시글을 Bookmarking 한다
+Path : /api/v1/posts/{postId}/bookmarks
+
+==== Request
+include::{snippets}/post-controller-test/add-bookmark/http-request.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/add-bookmark/http-response.adoc[]
+---
+
+=== Delete : 특정 게시글의 Bookmarking을 해제한다
+Path : /api/v1/posts/{postId}/bookmarks
+
+==== Request
+include::{snippets}/post-controller-test/remove-bookmark/http-request.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/remove-bookmark/http-response.adoc[]
+
+== Comment API
+
+=== Post : 특정 게시글에 댓글을 단다.
+Path : /api/v1/posts/{postId}/comments
+
+==== Request
+include::{snippets}/post-controller-test/add-comment-on-post/http-request.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/add-comment-on-post/http-response.adoc[]
+---
+
+=== Put : 특정 게시글의 댓글을 수정한다.
+Path : /api/v1/posts/{postId}/comments/{commentId}
+
+==== Request
+include::{snippets}/post-controller-test/update-comment-on-post/http-request.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/update-comment-on-post/http-response.adoc[]
+---
+
+=== Delete : 특정 게시글의 댓글을 삭제한다.
+Path : /api/v1/posts/{postId}/comments/{commentId}
+
+==== Request
+include::{snippets}/post-controller-test/delete-comment-on-post/http-request.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/delete-comment-on-post/http-response.adoc[]
+
+== Direct Post API
+
+=== Get : 수신함 요약을 조회한다.
+Path : /api/v1/posts/received/summary
+
+==== Request
+include::{snippets}/post-controller-test/inquire-received-post-summary/http-request.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/inquire-received-post-summary/http-response.adoc[]
+---
+
+=== Get : 수신함을 조회한다.
+Path : /api/v1/posts/received
+
+==== Request
+include::{snippets}/post-controller-test/inquire-posts-with-parameters/http-request.adoc[]
+
+===== Query parameters
+include::{snippets}/posts/query-parameters.adoc[0]
+
+==== Response
+include::{snippets}/post-controller-test/inquire-posts-with-parameters/http-response.adoc[]
+---
+
+

@@ -448,9 +448,31 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel1">
 <li><a href="#_post_api">Post API</a>
 <ul class="sectlevel2">
-<li><a href="#_get_게시글_전체_페이지를_조회한다">GET : 게시글 전체 페이지를 조회한다.</a></li>
-<li><a href="#_get_게시글_상세_페이지를_조회한다">GET : 게시글 상세 페이지를 조회한다.</a></li>
+<li><a href="#_get_게시글_전체_페이지를_조회한다">Get : 게시글 전체 페이지를 조회한다.</a></li>
+<li><a href="#_get_게시글_상세_페이지를_조회한다">Get : 게시글 상세 페이지를 조회한다.</a></li>
 <li><a href="#_post_게시글을_생성한다">Post : 게시글을 생성한다.</a></li>
+<li><a href="#_put_게시글을_수정한다">Put : 게시글을 수정한다</a></li>
+<li><a href="#_delete_게시글을_삭제한다">Delete : 게시글을 삭제한다</a></li>
+</ul>
+</li>
+<li><a href="#_bookmark_api">Bookmark API</a>
+<ul class="sectlevel2">
+<li><a href="#_get_북마크된_게시글들의_요약을_제공한다화면_좌측_사이드바_api">Get : 북마크된 게시글들의 요약을 제공한다(화면 좌측 사이드바 API).</a></li>
+<li><a href="#_post_특정_게시글을_bookmarking_한다">Post : 특정 게시글을 Bookmarking 한다</a></li>
+<li><a href="#_delete_특정_게시글의_bookmarking을_해제한다">Delete : 특정 게시글의 Bookmarking을 해제한다</a></li>
+</ul>
+</li>
+<li><a href="#_comment_api">Comment API</a>
+<ul class="sectlevel2">
+<li><a href="#_post_특정_게시글에_댓글을_단다">Post : 특정 게시글에 댓글을 단다.</a></li>
+<li><a href="#_put_특정_게시글의_댓글을_수정한다">Put : 특정 게시글의 댓글을 수정한다.</a></li>
+<li><a href="#_delete_특정_게시글의_댓글을_삭제한다">Delete : 특정 게시글의 댓글을 삭제한다.</a></li>
+</ul>
+</li>
+<li><a href="#_direct_post_api">Direct Post API</a>
+<ul class="sectlevel2">
+<li><a href="#_get_수신함_요약을_조회한다">Get : 수신함 요약을 조회한다.</a></li>
+<li><a href="#_get_수신함을_조회한다">Get : 수신함을 조회한다.</a></li>
 </ul>
 </li>
 </ul>
@@ -461,7 +483,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="_post_api">Post API</h2>
 <div class="sectionbody">
 <div class="sect2">
-<h3 id="_get_게시글_전체_페이지를_조회한다">GET : 게시글 전체 페이지를 조회한다.</h3>
+<h3 id="_get_게시글_전체_페이지를_조회한다">Get : 게시글 전체 페이지를 조회한다.</h3>
 <div class="paragraph">
 <p>Path : /api/v1/posts</p>
 </div>
@@ -554,12 +576,12 @@ Content-Length: 965
         "unsorted" : true
       },
       "offset" : 0,
-      "unpaged" : false,
-      "paged" : true
+      "paged" : true,
+      "unpaged" : false
     },
     "last" : true,
-    "totalElements" : 1,
     "totalPages" : 1,
+    "totalElements" : 1,
     "size" : 10,
     "number" : 0,
     "sort" : {
@@ -578,7 +600,7 @@ Content-Length: 965
 </div>
 </div>
 <div class="sect2">
-<h3 id="_get_게시글_상세_페이지를_조회한다">GET : 게시글 상세 페이지를 조회한다.</h3>
+<h3 id="_get_게시글_상세_페이지를_조회한다">Get : 게시글 상세 페이지를 조회한다.</h3>
 <div class="paragraph">
 <p>Path: /api/v1/posts/{postId}</p>
 </div>
@@ -623,7 +645,7 @@ Vary: Origin
 Vary: Access-Control-Request-Method
 Vary: Access-Control-Request-Headers
 Content-Type: application/json;charset=UTF-8
-Content-Length: 642
+Content-Length: 637
 
 {
   "statusCode" : 200,
@@ -634,13 +656,13 @@ Content-Length: 642
     "content" : "content",
     "category" : "ANNOUNCEMENT",
     "status" : "COMPLETE",
-    "expiredDate" : "24/04/10",
+    "expiredDate" : "24/04/24 21:42",
     "writtenBy" : "tester",
-    "createdAt" : "2024.04.10 16:15",
-    "username" : "tester",
+    "createdAt" : "2024.04.24 21:42",
     "commentResponseDtos" : [ {
+      "id" : 1,
       "writtenBy" : "commentTester",
-      "writtenDate" : "24/04/10",
+      "writtenDate" : "24/04/24",
       "content" : "commentContent"
     } ],
     "emojiResponseDtos" : [ {
@@ -664,7 +686,7 @@ Content-Length: 642
 <div class="content">
 <pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/v1/posts HTTP/1.1
 Content-Type: application/json;charset=UTF-8
-Content-Length: 145
+Content-Length: 182
 Host: localhost:8080
 
 {
@@ -672,7 +694,8 @@ Host: localhost:8080
   "content" : "content",
   "category" : "ANNOUNCEMENT",
   "status" : "IN_PROGRESS",
-  "expiredDate" : "2024-04-10"
+  "expiredDate" : "2024-04-24 21:42",
+  "sendTargetUserIds" : null
 }</code></pre>
 </div>
 </div>
@@ -695,6 +718,531 @@ Content-Length: 70
 }</code></pre>
 </div>
 </div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_put_게시글을_수정한다">Put : 게시글을 수정한다</h3>
+<div class="paragraph">
+<p>Path: /api/v1/posts/{postId}</p>
+</div>
+<div class="sect3">
+<h4 id="_path_variable_2">Path variable</h4>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 2. /api/v1/posts/{postId}</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>postId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">게시글의 ID</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_request_4">Request</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">PUT /api/v1/posts/1 HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Content-Length: 130
+Host: localhost:8080
+
+{
+  "title" : "updatedTitle",
+  "content" : "updatedContent",
+  "status" : "COMPLETE",
+  "expiredDate" : "2024-04-12 15:30"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_response_4">Response</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json;charset=UTF-8
+Content-Length: 206
+
+{
+  "statusCode" : 200,
+  "message" : "success",
+  "data" : {
+    "title" : "updatedTitle",
+    "content" : "updatedContent",
+    "status" : "COMPLETE",
+    "expiredDate" : "2024-04-12 15:30"
+  }
+}</code></pre>
+</div>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_delete_게시글을_삭제한다">Delete : 게시글을 삭제한다</h3>
+<div class="paragraph">
+<p>Path: /api/v1/posts/{postId}</p>
+</div>
+<div class="sect3">
+<h4 id="_path_variable_3">Path variable</h4>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 3. /api/v1/posts/{postId}</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>postId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">게시글의 ID</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_request_5">Request</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">DELETE /api/v1/posts/1 HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Host: localhost:8080</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_response_5">Response</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json;charset=UTF-8
+Content-Length: 70
+
+{
+  "statusCode" : 200,
+  "message" : "success",
+  "data" : null
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_bookmark_api">Bookmark API</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_get_북마크된_게시글들의_요약을_제공한다화면_좌측_사이드바_api">Get : 북마크된 게시글들의 요약을 제공한다(화면 좌측 사이드바 API).</h3>
+<div class="paragraph">
+<p>Path : /api/v1/posts/bookmarks</p>
+</div>
+<div class="sect3">
+<h4 id="_request_6">Request</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/v1/posts/bookmarks HTTP/1.1
+Host: localhost:8080</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_response_6">Response</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json;charset=UTF-8
+Content-Length: 127
+
+{
+  "statusCode" : 200,
+  "message" : "success",
+  "data" : [ {
+    "postId" : 1,
+    "title" : "bookmarkedPost"
+  } ]
+}</code></pre>
+</div>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_post_특정_게시글을_bookmarking_한다">Post : 특정 게시글을 Bookmarking 한다</h3>
+<div class="paragraph">
+<p>Path : /api/v1/posts/{postId}/bookmarks</p>
+</div>
+<div class="sect3">
+<h4 id="_request_7">Request</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/v1/posts/1/bookmarks HTTP/1.1
+Host: localhost:8080
+Content-Type: application/x-www-form-urlencoded</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_response_7">Response</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json;charset=UTF-8
+Content-Length: 70
+
+{
+  "statusCode" : 200,
+  "message" : "success",
+  "data" : null
+}</code></pre>
+</div>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_delete_특정_게시글의_bookmarking을_해제한다">Delete : 특정 게시글의 Bookmarking을 해제한다</h3>
+<div class="paragraph">
+<p>Path : /api/v1/posts/{postId}/bookmarks</p>
+</div>
+<div class="sect3">
+<h4 id="_request_8">Request</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">DELETE /api/v1/posts/1/bookmarks HTTP/1.1
+Host: localhost:8080</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_response_8">Response</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json;charset=UTF-8
+Content-Length: 70
+
+{
+  "statusCode" : 200,
+  "message" : "success",
+  "data" : null
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_comment_api">Comment API</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_post_특정_게시글에_댓글을_단다">Post : 특정 게시글에 댓글을 단다.</h3>
+<div class="paragraph">
+<p>Path : /api/v1/posts/{postId}/comments</p>
+</div>
+<div class="sect3">
+<h4 id="_request_9">Request</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/v1/posts/1/comments HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Content-Length: 27
+Host: localhost:8080
+
+{
+  "content" : "title"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_response_9">Response</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 201 Created
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json;charset=UTF-8
+Content-Length: 67
+
+{
+  "statusCode" : 201,
+  "message" : "created",
+  "data" : 1
+}</code></pre>
+</div>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_put_특정_게시글의_댓글을_수정한다">Put : 특정 게시글의 댓글을 수정한다.</h3>
+<div class="paragraph">
+<p>Path : /api/v1/posts/{postId}/comments/{commentId}</p>
+</div>
+<div class="sect3">
+<h4 id="_request_10">Request</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">PUT /api/v1/posts/1/comments/1 HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Content-Length: 27
+Host: localhost:8080
+
+{
+  "content" : "title"
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_response_10">Response</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json;charset=UTF-8
+Content-Length: 67
+
+{
+  "statusCode" : 200,
+  "message" : "success",
+  "data" : 1
+}</code></pre>
+</div>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_delete_특정_게시글의_댓글을_삭제한다">Delete : 특정 게시글의 댓글을 삭제한다.</h3>
+<div class="paragraph">
+<p>Path : /api/v1/posts/{postId}/comments/{commentId}</p>
+</div>
+<div class="sect3">
+<h4 id="_request_11">Request</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">DELETE /api/v1/posts/1/comments/1 HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Host: localhost:8080</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_response_11">Response</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json;charset=UTF-8
+Content-Length: 70
+
+{
+  "statusCode" : 200,
+  "message" : "success",
+  "data" : null
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_direct_post_api">Direct Post API</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_get_수신함_요약을_조회한다">Get : 수신함 요약을 조회한다.</h3>
+<div class="paragraph">
+<p>Path : /api/v1/posts/received/summary</p>
+</div>
+<div class="sect3">
+<h4 id="_request_12">Request</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/v1/posts/received/summary HTTP/1.1
+Host: localhost:8080</code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_response_12">Response</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json;charset=UTF-8
+Content-Length: 153
+
+{
+  "statusCode" : 200,
+  "message" : "success",
+  "data" : [ {
+    "userId" : null,
+    "username" : "tester",
+    "unReadPostCount" : 3
+  } ]
+}</code></pre>
+</div>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_get_수신함을_조회한다">Get : 수신함을 조회한다.</h3>
+<div class="paragraph">
+<p>Path : /api/v1/posts/received</p>
+</div>
+<div class="sect3">
+<h4 id="_request_13">Request</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">GET /api/v1/posts?searchType=TITLE&amp;searchValue=title&amp;postStatus=IN_PROGRESS&amp;postCategory=DELIVERY&amp;page=0&amp;size=10 HTTP/1.1
+Accept: application/json
+Host: localhost:8080</code></pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_query_parameters_2">Query parameters</h5>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>searchType</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">검색의 유형으로, Title, content, writtenBy가 존재</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>searchValue</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">검색에 쓰일 내용</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>postStatus</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">게시글의 상태, Complete, InProgress, UnComplete가 존재</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>postCategory</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">게시글의 종류, Announcement, Delivery, Etc가 존재</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>page</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Page 번호</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>size</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Page size</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_response_13">Response</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json;charset=UTF-8
+Content-Length: 965
+
+{
+  "statusCode" : 200,
+  "message" : "success",
+  "data" : {
+    "content" : [ {
+      "id" : 1,
+      "title" : "title",
+      "content" : "content",
+      "status" : "IN_PROGRESS",
+      "writtenBy" : "tester",
+      "commentCount" : 3,
+      "emojiResponsDtos" : [ {
+        "emoji" : "\uD83D\uDE00",
+        "totalCount" : 1,
+        "usernames" : [ "tester2" ]
+      } ],
+      "bookmarked" : false
+    } ],
+    "pageable" : {
+      "pageNumber" : 0,
+      "pageSize" : 10,
+      "sort" : {
+        "empty" : true,
+        "sorted" : false,
+        "unsorted" : true
+      },
+      "offset" : 0,
+      "paged" : true,
+      "unpaged" : false
+    },
+    "last" : true,
+    "totalPages" : 1,
+    "totalElements" : 1,
+    "size" : 10,
+    "number" : 0,
+    "sort" : {
+      "empty" : true,
+      "sorted" : false,
+      "unsorted" : true
+    },
+    "first" : true,
+    "numberOfElements" : 1,
+    "empty" : false
+  }
+}</code></pre>
+</div>
+</div>
+<hr>
 </div>
 </div>
 </div>
@@ -703,7 +1251,7 @@ Content-Length: 70
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2024-04-10 16:14:52 +0900
+Last updated 2024-04-24 21:41:49 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

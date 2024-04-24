@@ -41,7 +41,6 @@ public class SecurityConfiguration {
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(
                 request -> request
-                    .requestMatchers("/login").permitAll()
                     .requestMatchers("/docs/**").permitAll()
                     .requestMatchers("/api/**").hasRole(UserType.STAFF.name())
                     .anyRequest().authenticated()
@@ -62,6 +61,12 @@ public class SecurityConfiguration {
     public WebSecurityCustomizer configureH2ConsoleEnable() {
         return web -> web.ignoring()
             .requestMatchers(PathRequest.toH2Console());
+    }
+
+    @Bean
+    public WebSecurityCustomizer configureEnableDocs() {
+        return web -> web.ignoring()
+            .requestMatchers("/docs/**");
     }
 
     @Bean
