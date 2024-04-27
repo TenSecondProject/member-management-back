@@ -3,6 +3,7 @@ package org.colcum.admin.domain.post.api;
 import lombok.RequiredArgsConstructor;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
+import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
@@ -15,6 +16,7 @@ import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.global.Error.InvalidAuthenticationException;
+import org.colcum.admin.global.auth.jwt.Jwt;
 import org.colcum.admin.global.auth.jwt.JwtAuthentication;
 import org.colcum.admin.global.common.api.dto.ApiResponse;
 import org.springframework.data.domain.Page;
@@ -225,6 +227,20 @@ public class PostController {
         }
         Page<PostResponseDto> responses = postService.findReceivedPosts(searchType, searchValue, statuses, authentication.userEntity, pageable);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
+    }
+
+    @PostMapping("/{postId}/emojis")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public ApiResponse<Long> addEmojiOnPost(
+        @PathVariable(name = "postId") Long postId,
+        @RequestBody EmojiCreateDto dto,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        Long emojiReactionId = postService.addEmoji(postId, dto, authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.CREATED.value(), "created", emojiReactionId);
     }
 
 }

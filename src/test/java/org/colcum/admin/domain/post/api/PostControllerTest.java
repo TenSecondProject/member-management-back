@@ -2,9 +2,11 @@ package org.colcum.admin.domain.post.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.checkerframework.checker.units.qual.C;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
+import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
@@ -617,6 +619,35 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.statusCode").value(HttpStatus.CREATED.value()),
                 jsonPath("$.message").value("created"),
                 jsonPath("$.data").value(Matchers.nullValue())
+            )
+            .andDo(print());
+
+    }
+
+    @Test
+    @DisplayName("게시글에 이모지를 단다.")
+    @WithMockJwtAuthentication
+    void addEmojiOnPost() throws Exception {
+        // given
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+        EmojiCreateDto dto = new EmojiCreateDto("\uD83D\uDE00");
+        Long postId = 1L;
+        Long emojiReactionId = 1L;
+
+        // when
+        when(postService.addEmoji(postId, dto, user)).thenReturn(emojiReactionId);
+
+        // then
+        this.mockMvc
+            .perform(
+                post(MessageFormat.format("/api/v1/posts/{0}/emojis", postId))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(dto)))
+            .andExpectAll(
+                status().isCreated(),
+                jsonPath("$.statusCode").value(HttpStatus.CREATED.value()),
+                jsonPath("$.message").value("created"),
+                jsonPath("$.data").value(emojiReactionId)
             )
             .andDo(print());
 
