@@ -3,6 +3,7 @@ package org.colcum.admin.domain.post.application;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
+import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
@@ -11,9 +12,11 @@ import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
 import org.colcum.admin.domain.post.dao.CommentRepository;
+import org.colcum.admin.domain.post.dao.EmojiReactionRepository;
 import org.colcum.admin.domain.post.dao.PostRepository;
 import org.colcum.admin.domain.post.domain.CommentEntity;
 import org.colcum.admin.domain.post.domain.DirectedPost;
+import org.colcum.admin.domain.post.domain.EmojiReactionEntity;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.dao.DirectedPostRepository;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
@@ -67,6 +70,9 @@ class PostServiceTest {
 
     @Autowired
     private DirectedPostRepository directedPostRepository;
+
+    @Autowired
+    private EmojiReactionRepository emojiReactionRepository;
 
     @BeforeEach
     void setup() {
@@ -596,6 +602,24 @@ class PostServiceTest {
         assertThat(result.size()).isEqualTo(1);
         assertThat(result.get(0).getUsername()).isEqualTo(user.getName());
         assertThat(result.get(0).getUnReadPostCount()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("특정 게시글에 이모지를 단다.")
+    void addEmojiOnPost() {
+        // given
+        PostEntity post = createFixturePost("title", "content", user);
+        post = postRepository.save(post);
+        EmojiCreateDto dto = new EmojiCreateDto("\uD83D\uDE00");
+
+        // when
+        Long emojiId = postService.addEmoji(post.getId(), dto, user);
+
+        EmojiReactionEntity entity = emojiReactionRepository.findById(emojiId).get();
+        // then
+        assertThat(dto.getEmoji()).isEqualTo(entity.getContent());
+        assertThat(post).isEqualTo(entity.getPostEntity());
+        assertThat(user).isEqualTo(entity.getUser());
     }
 
 }
