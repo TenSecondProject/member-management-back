@@ -618,7 +618,7 @@ class PostServiceTest {
 
         EmojiReactionEntity entity = emojiReactionRepository.findById(emojiId).get();
         // then
-        assertThat(dto.getEmoji()).isEqualTo(entity.getContent());
+        assertThat(dto.getContent()).isEqualTo(entity.getContent());
         assertThat(post).isEqualTo(entity.getPostEntity());
         assertThat(user).isEqualTo(entity.getUser());
     }

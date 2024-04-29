@@ -51,13 +51,14 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
@@ -377,8 +378,8 @@ class PostControllerTest extends AbstractRestDocsTest {
 
         // then
         this.mockMvc.perform(
-            delete("/api/v1/posts/" + postId)
-                .contentType(MediaType.APPLICATION_JSON))
+                delete("/api/v1/posts/" + postId)
+                    .contentType(MediaType.APPLICATION_JSON))
             .andExpectAll(
                 status().isOk(),
                 jsonPath("$.statusCode").value(HttpStatus.OK.value()),
@@ -648,8 +649,12 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.message").value("created"),
                 jsonPath("$.data").value(emojiReactionId)
             )
+            .andDo(
+                document("PostController/addEmojiOnPost", requestFields(
+                    fieldWithPath("content").description("이모지 자체의 유니코드 값 입니다. ex) \uD83D\uDE00")
+                ))
+            )
             .andDo(print());
-
     }
 
     @Test
@@ -675,6 +680,11 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.statusCode").value(HttpStatus.OK.value()),
                 jsonPath("$.message").value("success"),
                 jsonPath("$.data").value(Matchers.nullValue())
+            )
+            .andDo(
+                document("PostController/removeEmojiOnPost", requestFields(
+                    fieldWithPath("content").description("이모지 자체의 유니코드 값 입니다. ex) \uD83D\uDE00")
+                ))
             )
             .andDo(print());
     }

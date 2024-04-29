@@ -475,6 +475,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_get_수신함을_조회한다">Get : 수신함을 조회한다.</a></li>
 </ul>
 </li>
+<li><a href="#_emoji_on_post_api">Emoji on post API</a>
+<ul class="sectlevel2">
+<li><a href="#_post_특정_게시글에_이모지를_단다">Post : 특정 게시글에 이모지를 단다.</a></li>
+<li><a href="#_delete_특정_게시글에_이모지를_제거한다">Delete : 특정 게시글에 이모지를 제거한다.</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -580,8 +586,8 @@ Content-Length: 965
       "unpaged" : false
     },
     "last" : true,
-    "totalPages" : 1,
     "totalElements" : 1,
+    "totalPages" : 1,
     "size" : 10,
     "number" : 0,
     "sort" : {
@@ -656,13 +662,13 @@ Content-Length: 637
     "content" : "content",
     "category" : "ANNOUNCEMENT",
     "status" : "COMPLETE",
-    "expiredDate" : "24/04/24 21:42",
+    "expiredDate" : "24/04/29 21:02",
     "writtenBy" : "tester",
-    "createdAt" : "2024.04.24 21:42",
+    "createdAt" : "2024.04.29 21:02",
     "commentResponseDtos" : [ {
       "id" : 1,
       "writtenBy" : "commentTester",
-      "writtenDate" : "24/04/24",
+      "writtenDate" : "24/04/29",
       "content" : "commentContent"
     } ],
     "emojiResponseDtos" : [ {
@@ -694,7 +700,7 @@ Host: localhost:8080
   "content" : "content",
   "category" : "ANNOUNCEMENT",
   "status" : "IN_PROGRESS",
-  "expiredDate" : "2024-04-24 21:42",
+  "expiredDate" : "2024-04-29 21:02",
   "sendTargetUserIds" : null
 }</code></pre>
 </div>
@@ -1226,8 +1232,151 @@ Content-Length: 965
       "unpaged" : false
     },
     "last" : true,
-    "totalPages" : 1,
     "totalElements" : 1,
+    "totalPages" : 1,
+    "size" : 10,
+    "number" : 0,
+    "sort" : {
+      "empty" : true,
+      "sorted" : false,
+      "unsorted" : true
+    },
+    "first" : true,
+    "numberOfElements" : 1,
+    "empty" : false
+  }
+}</code></pre>
+</div>
+</div>
+<hr>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_emoji_on_post_api">Emoji on post API</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_post_특정_게시글에_이모지를_단다">Post : 특정 게시글에 이모지를 단다.</h3>
+<div class="paragraph">
+<p>Path : /api/v1/posts/{postId}/emojis</p>
+</div>
+<div class="sect3">
+<h4 id="_request_14">Request</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">POST /api/v1/posts/1/emojis HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Content-Length: 34
+Host: localhost:8080
+
+{
+  "content" : "\uD83D\uDE00"
+}</code></pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_request_body">Request body</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{"content":"😀"}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_response_14">Response</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 201 Created
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json;charset=UTF-8
+Content-Length: 67
+
+{
+  "statusCode" : 201,
+  "message" : "created",
+  "data" : 1
+}</code></pre>
+</div>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_delete_특정_게시글에_이모지를_제거한다">Delete : 특정 게시글에 이모지를 제거한다.</h3>
+<div class="paragraph">
+<p>Delete : /api/v1/posts/{postId}/emojis</p>
+</div>
+<div class="sect3">
+<h4 id="_request_15">Request</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">DELETE /api/v1/posts/1/emojis HTTP/1.1
+Content-Type: application/json;charset=UTF-8
+Content-Length: 34
+Host: localhost:8080
+
+{
+  "content" : "\uD83D\uDE00"
+}</code></pre>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_request_body_2">Request body</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-json hljs" data-lang="json">{"content":"😀"}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_response_15">Response</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight nowrap"><code class="language-http hljs" data-lang="http">HTTP/1.1 200 OK
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+Content-Type: application/json;charset=UTF-8
+Content-Length: 965
+
+{
+  "statusCode" : 200,
+  "message" : "success",
+  "data" : {
+    "content" : [ {
+      "id" : 1,
+      "title" : "title",
+      "content" : "content",
+      "status" : "IN_PROGRESS",
+      "writtenBy" : "tester",
+      "commentCount" : 3,
+      "emojiResponsDtos" : [ {
+        "emoji" : "\uD83D\uDE00",
+        "totalCount" : 1,
+        "usernames" : [ "tester2" ]
+      } ],
+      "bookmarked" : false
+    } ],
+    "pageable" : {
+      "pageNumber" : 0,
+      "pageSize" : 10,
+      "sort" : {
+        "empty" : true,
+        "sorted" : false,
+        "unsorted" : true
+      },
+      "offset" : 0,
+      "paged" : true,
+      "unpaged" : false
+    },
+    "last" : true,
+    "totalElements" : 1,
+    "totalPages" : 1,
     "size" : 10,
     "number" : 0,
     "sort" : {
@@ -1251,7 +1400,7 @@ Content-Length: 965
 <div id="footer">
 <div id="footer-text">
 Version 0.0.1-SNAPSHOT<br>
-Last updated 2024-04-24 21:41:49 +0900
+Last updated 2024-04-29 20:57:49 +0900
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.3/highlight.min.js"></script>

@@ -12,10 +12,10 @@ import org.colcum.admin.domain.user.domain.UserEntity;
 @AllArgsConstructor
 public class EmojiCreateDto {
 
-    private String emoji;
+    private String content;
 
     public EmojiReactionEntity toEntity(PostEntity post, UserEntity user) {
-        return new EmojiReactionEntity(user, post, this.emoji);
+        return new EmojiReactionEntity(user, post, this.content);
     }
 
 }

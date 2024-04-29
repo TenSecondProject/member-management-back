@@ -155,3 +155,31 @@ include::{snippets}/post-controller-test/inquire-posts-with-parameters/http-resp
 ---
 
 
+== Emoji on post API
+
+=== Post : 특정 게시글에 이모지를 단다.
+Path : /api/v1/posts/{postId}/emojis
+
+==== Request
+include::{snippets}/post-controller-test/add-emoji-on-post/http-request.adoc[]
+
+===== Request body
+include::{snippets}/PostController/addEmojiOnPost/request-body.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/add-emoji-on-post/http-response.adoc[]
+---
+
+=== Delete : 특정 게시글에 이모지를 제거한다.
+Delete : /api/v1/posts/{postId}/emojis
+
+==== Request
+include::{snippets}/post-controller-test/remove-emoji-on-post/http-request.adoc[]
+
+===== Request body
+include::{snippets}/PostController/removeEmojiOnPost/request-body.adoc[]
+
+==== Response
+include::{snippets}/post-controller-test/inquire-posts-with-parameters/http-response.adoc[]
+---
+
