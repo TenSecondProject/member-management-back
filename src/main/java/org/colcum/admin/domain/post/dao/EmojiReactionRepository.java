@@ -7,6 +7,6 @@ import java.util.Optional;
 
 public interface EmojiReactionRepository extends JpaRepository<EmojiReactionEntity, Long> {
 
-    Optional<EmojiReactionEntity> findByPostEntity_IdAndUser_Id(Long postId, Long userId);
+    Optional<EmojiReactionEntity> findByPostEntity_IdAndUser_IdAndContent(Long postId, Long userId, String content);
 
 }

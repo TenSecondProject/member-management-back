@@ -4,6 +4,7 @@ import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
+import org.colcum.admin.domain.post.api.dto.EmojiDeleteDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
@@ -628,11 +629,13 @@ class PostServiceTest {
         // given
         PostEntity post = createFixturePost("title", "content", user);
         post = postRepository.save(post);
-        EmojiCreateDto dto = new EmojiCreateDto("\uD83D\uDE00");
-        Long emojiId = postService.addEmojiOnPost(post.getId(), dto, user);
+        String emojiContent = "\uD83D\uDE00";
+        EmojiCreateDto createDto = new EmojiCreateDto(emojiContent);
+        Long emojiId = postService.addEmojiOnPost(post.getId(), createDto, user);
 
         // when
-        postService.removeEmojiOnPost(post.getId(), user);
+        EmojiDeleteDto deleteDto = new EmojiDeleteDto(emojiContent);
+        postService.removeEmojiOnPost(post.getId(), user, deleteDto);
 
         // then
         EmojiReactionEntity emojiReactionEntity = emojiReactionRepository.findById(emojiId).get();

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
+import org.colcum.admin.domain.post.api.dto.EmojiDeleteDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
@@ -183,8 +184,8 @@ public class PostService {
     }
 
     @Transactional
-    public void removeEmojiOnPost(Long postId, UserEntity user) {
-        EmojiReactionEntity emojiReactionEntity = emojiReactionRepository.findByPostEntity_IdAndUser_Id(postId, user.getId()).orElseThrow(() -> {
+    public void removeEmojiOnPost(Long postId, UserEntity user, EmojiDeleteDto dto) {
+        EmojiReactionEntity emojiReactionEntity = emojiReactionRepository.findByPostEntity_IdAndUser_IdAndContent(postId, user.getId(), dto.getContent()).orElseThrow(() -> {
             throw new EmojiNotFoundException("게시글에 등록된 이모지 중, 해당 이모지는 찾을 수 없습니다.");
         });
         emojiReactionEntity.delete();
