@@ -26,6 +26,7 @@ import org.colcum.admin.domain.user.dao.UserRepository;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.domain.user.domain.vo.Bookmark;
 import org.colcum.admin.global.Error.CommentNotFoundException;
+import org.colcum.admin.global.Error.EmojiNotFoundException;
 import org.colcum.admin.global.Error.InvalidAuthenticationException;
 import org.colcum.admin.global.Error.PostNotFoundException;
 import org.springframework.data.domain.Page;
@@ -179,6 +180,15 @@ public class PostService {
         EmojiReactionEntity entity = dto.toEntity(post, user);
         entity = emojiReactionRepository.save(entity);
         return entity.getId();
+    }
+
+    @Transactional
+    public void removeEmojiOnPost(Long postId, UserEntity user) {
+        EmojiReactionEntity emojiReactionEntity = emojiReactionRepository.findByPostEntity_IdAndUser_Id(postId, user.getId()).orElseThrow(() -> {
+            throw new EmojiNotFoundException("게시글에 등록된 이모지 중, 해당 이모지는 찾을 수 없습니다.");
+        });
+        emojiReactionEntity.delete();
+        emojiReactionRepository.save(emojiReactionEntity);
     }
 
     private void createDirectedPosts(PostCreateDto dto, PostEntity post, UserEntity user) {

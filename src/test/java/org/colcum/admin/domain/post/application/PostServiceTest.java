@@ -622,4 +622,21 @@ class PostServiceTest {
         assertThat(user).isEqualTo(entity.getUser());
     }
 
+    @Test
+    @DisplayName("특정 게시글에 이모지를 제거한다.")
+    void removeEmojiOnPost() {
+        // given
+        PostEntity post = createFixturePost("title", "content", user);
+        post = postRepository.save(post);
+        EmojiCreateDto dto = new EmojiCreateDto("\uD83D\uDE00");
+        Long emojiId = postService.addEmojiOnPost(post.getId(), dto, user);
+
+        // when
+        postService.removeEmojiOnPost(post.getId(), user);
+
+        // then
+        EmojiReactionEntity emojiReactionEntity = emojiReactionRepository.findById(emojiId).get();
+        assertThat(emojiReactionEntity.isDeleted()).isEqualTo(true);
+    }
+
 }
