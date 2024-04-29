@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
+import org.colcum.admin.domain.post.api.dto.EmojiDeleteDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
@@ -239,6 +240,20 @@ public class PostController {
         }
         Long emojiReactionId = postService.addEmojiOnPost(postId, dto, authentication.userEntity);
         return new ApiResponse<>(HttpStatus.CREATED.value(), "created", emojiReactionId);
+    }
+
+    @DeleteMapping("/{postId}/emojis")
+    @ResponseStatus(value = HttpStatus.OK)
+    public ApiResponse<Void>  removeEmojiOnPost(
+        @PathVariable(name = "postId") Long postId,
+        @RequestBody EmojiDeleteDto dto,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        postService.removeEmojiOnPost(postId, authentication.userEntity, dto);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
     }
 
 }

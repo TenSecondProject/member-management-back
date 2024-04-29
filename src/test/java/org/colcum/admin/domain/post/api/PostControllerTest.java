@@ -5,6 +5,7 @@ import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
+import org.colcum.admin.domain.post.api.dto.EmojiDeleteDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
@@ -651,5 +652,31 @@ class PostControllerTest extends AbstractRestDocsTest {
 
     }
 
+    @Test
+    @DisplayName("게시글에 이모지를 제거한다.")
+    @WithMockJwtAuthentication
+    void removeEmojiOnPost() throws Exception {
+        // given
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+        EmojiDeleteDto dto = new EmojiDeleteDto("\uD83D\uDE00");
+        Long postId = 1L;
+
+        // when
+        doNothing().when(postService).removeEmojiOnPost(postId, user, dto);
+
+        // then
+        this.mockMvc
+            .perform(
+                delete(MessageFormat.format("/api/v1/posts/{0}/emojis", postId))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(dto)))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data").value(Matchers.nullValue())
+            )
+            .andDo(print());
+    }
 
 }
