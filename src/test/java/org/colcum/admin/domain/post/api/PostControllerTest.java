@@ -1,10 +1,11 @@
 package org.colcum.admin.domain.post.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
+import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
+import org.colcum.admin.domain.post.api.dto.EmojiDeleteDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
@@ -50,13 +51,14 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
@@ -376,8 +378,8 @@ class PostControllerTest extends AbstractRestDocsTest {
 
         // then
         this.mockMvc.perform(
-            delete("/api/v1/posts/" + postId)
-                .contentType(MediaType.APPLICATION_JSON))
+                delete("/api/v1/posts/" + postId)
+                    .contentType(MediaType.APPLICATION_JSON))
             .andExpectAll(
                 status().isOk(),
                 jsonPath("$.statusCode").value(HttpStatus.OK.value()),
@@ -620,6 +622,71 @@ class PostControllerTest extends AbstractRestDocsTest {
             )
             .andDo(print());
 
+    }
+
+    @Test
+    @DisplayName("게시글에 이모지를 단다.")
+    @WithMockJwtAuthentication
+    void addEmojiOnPost() throws Exception {
+        // given
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+        EmojiCreateDto dto = new EmojiCreateDto("\uD83D\uDE00");
+        Long postId = 1L;
+        Long emojiReactionId = 1L;
+
+        // when
+        when(postService.addEmojiOnPost(postId, dto, user)).thenReturn(emojiReactionId);
+
+        // then
+        this.mockMvc
+            .perform(
+                post(MessageFormat.format("/api/v1/posts/{0}/emojis", postId))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(dto)))
+            .andExpectAll(
+                status().isCreated(),
+                jsonPath("$.statusCode").value(HttpStatus.CREATED.value()),
+                jsonPath("$.message").value("created"),
+                jsonPath("$.data").value(emojiReactionId)
+            )
+            .andDo(
+                document("PostController/addEmojiOnPost", requestFields(
+                    fieldWithPath("content").description("이모지 자체의 유니코드 값 입니다. ex) \uD83D\uDE00")
+                ))
+            )
+            .andDo(print());
+    }
+
+    @Test
+    @DisplayName("게시글에 이모지를 제거한다.")
+    @WithMockJwtAuthentication
+    void removeEmojiOnPost() throws Exception {
+        // given
+        UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
+        EmojiDeleteDto dto = new EmojiDeleteDto("\uD83D\uDE00");
+        Long postId = 1L;
+
+        // when
+        doNothing().when(postService).removeEmojiOnPost(postId, user, dto);
+
+        // then
+        this.mockMvc
+            .perform(
+                delete(MessageFormat.format("/api/v1/posts/{0}/emojis", postId))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(dto)))
+            .andExpectAll(
+                status().isOk(),
+                jsonPath("$.statusCode").value(HttpStatus.OK.value()),
+                jsonPath("$.message").value("success"),
+                jsonPath("$.data").value(Matchers.nullValue())
+            )
+            .andDo(
+                document("PostController/removeEmojiOnPost", requestFields(
+                    fieldWithPath("content").description("이모지 자체의 유니코드 값 입니다. ex) \uD83D\uDE00")
+                ))
+            )
+            .andDo(print());
     }
 
 }

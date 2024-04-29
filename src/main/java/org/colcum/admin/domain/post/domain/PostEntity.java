@@ -28,6 +28,7 @@ import org.colcum.admin.global.common.domain.BaseEntity;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "post")
@@ -124,6 +125,21 @@ public class PostEntity extends BaseEntity {
         this.status = dto.getStatus();
         this.expiredDate = dto.getExpiredDate();
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PostEntity post = (PostEntity) o;
+
+        return Objects.equals(id, post.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id != null ? id.hashCode() : 0;
     }
 
 }

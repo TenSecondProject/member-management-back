@@ -3,6 +3,8 @@ package org.colcum.admin.domain.post.api;
 import lombok.RequiredArgsConstructor;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
+import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
+import org.colcum.admin.domain.post.api.dto.EmojiDeleteDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
@@ -10,7 +12,6 @@ import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
 import org.colcum.admin.domain.post.application.PostService;
-import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
@@ -225,6 +226,34 @@ public class PostController {
         }
         Page<PostResponseDto> responses = postService.findReceivedPosts(searchType, searchValue, statuses, authentication.userEntity, pageable);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
+    }
+
+    @PostMapping("/{postId}/emojis")
+    @ResponseStatus(value = HttpStatus.CREATED)
+    public ApiResponse<Long> addEmojiOnPost(
+        @PathVariable(name = "postId") Long postId,
+        @RequestBody EmojiCreateDto dto,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        Long emojiReactionId = postService.addEmojiOnPost(postId, dto, authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.CREATED.value(), "created", emojiReactionId);
+    }
+
+    @DeleteMapping("/{postId}/emojis")
+    @ResponseStatus(value = HttpStatus.OK)
+    public ApiResponse<Void>  removeEmojiOnPost(
+        @PathVariable(name = "postId") Long postId,
+        @RequestBody EmojiDeleteDto dto,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        postService.removeEmojiOnPost(postId, authentication.userEntity, dto);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
     }
 
 }
