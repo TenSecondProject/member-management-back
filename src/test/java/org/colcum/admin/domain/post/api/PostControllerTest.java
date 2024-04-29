@@ -1,8 +1,6 @@
 package org.colcum.admin.domain.post.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.checkerframework.checker.units.qual.C;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
@@ -635,7 +633,7 @@ class PostControllerTest extends AbstractRestDocsTest {
         Long emojiReactionId = 1L;
 
         // when
-        when(postService.addEmoji(postId, dto, user)).thenReturn(emojiReactionId);
+        when(postService.addEmojiOnPost(postId, dto, user)).thenReturn(emojiReactionId);
 
         // then
         this.mockMvc
@@ -652,5 +650,6 @@ class PostControllerTest extends AbstractRestDocsTest {
             .andDo(print());
 
     }
+
 
 }

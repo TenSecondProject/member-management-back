@@ -11,12 +11,10 @@ import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
 import org.colcum.admin.domain.post.application.PostService;
-import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.global.Error.InvalidAuthenticationException;
-import org.colcum.admin.global.auth.jwt.Jwt;
 import org.colcum.admin.global.auth.jwt.JwtAuthentication;
 import org.colcum.admin.global.common.api.dto.ApiResponse;
 import org.springframework.data.domain.Page;
@@ -239,7 +237,7 @@ public class PostController {
         if (Objects.isNull(authentication)) {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
-        Long emojiReactionId = postService.addEmoji(postId, dto, authentication.userEntity);
+        Long emojiReactionId = postService.addEmojiOnPost(postId, dto, authentication.userEntity);
         return new ApiResponse<>(HttpStatus.CREATED.value(), "created", emojiReactionId);
     }
 

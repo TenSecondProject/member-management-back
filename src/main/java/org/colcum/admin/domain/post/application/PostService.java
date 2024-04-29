@@ -172,7 +172,7 @@ public class PostService {
     }
 
     @Transactional
-    public Long addEmoji(Long postId, EmojiCreateDto dto, UserEntity user) {
+    public Long addEmojiOnPost(Long postId, EmojiCreateDto dto, UserEntity user) {
         PostEntity post = postRepository.findByIdAndDeletedIsFalse(postId).orElseThrow(() -> {
             throw new PostNotFoundException("해당 게시글을 찾을 수 없습니다.");
         });

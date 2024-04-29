@@ -613,7 +613,7 @@ class PostServiceTest {
         EmojiCreateDto dto = new EmojiCreateDto("\uD83D\uDE00");
 
         // when
-        Long emojiId = postService.addEmoji(post.getId(), dto, user);
+        Long emojiId = postService.addEmojiOnPost(post.getId(), dto, user);
 
         EmojiReactionEntity entity = emojiReactionRepository.findById(emojiId).get();
         // then
