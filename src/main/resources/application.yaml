@@ -33,7 +33,7 @@ logging:
 jwt:
   issuer: 10Second
   client-secret: ${JWT_SECRET}
-  expiry-seconds: 172800
+  expiry-seconds: 60000
 
 ---
 spring:

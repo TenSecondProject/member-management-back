@@ -12,6 +12,9 @@ import java.util.Date;
 
 public class Jwt {
 
+    public static final long ACCESS_TOKEN_EXPIRY_MINUTE = 360L;
+    public static final long REFRESH_TOKEN_EXPIRY_MINUTE = 1440L;
+
     private final String issuer;
 
     private final String clientSecret;
@@ -30,13 +33,13 @@ public class Jwt {
         this.jwtVerifier = com.auth0.jwt.JWT.require(algorithm).withIssuer(issuer).build();
     }
 
-    public String sign(Claims claims) {
+    public String sign(Claims claims, Long expiryMinute) {
         Date now = new Date();
         JWTCreator.Builder builder = com.auth0.jwt.JWT.create();
         builder.withIssuer(issuer);
         builder.withIssuedAt(now);
         if (expirySeconds > 0) {
-            builder.withExpiresAt(new Date(now.getTime() + expirySeconds * 1_000L));
+            builder.withExpiresAt(new Date(now.getTime() + expirySeconds * expiryMinute));
         }
         builder.withClaim("userId", claims.userId);
         builder.withArrayClaim("roles", claims.roles);
@@ -75,6 +78,7 @@ public class Jwt {
         }
 
         public static Claims of(Long userId, String[] roles) {
+            Date now = new Date();
             Claims claims = new Claims();
             claims.userId = userId;
             claims.roles = roles;

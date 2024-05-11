@@ -19,9 +19,10 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class AuthenticationFailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
+    ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        ObjectMapper objectMapper = new ObjectMapper();
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<Void>(HttpStatus.UNAUTHORIZED.value(), exception.getMessage(), null)));;

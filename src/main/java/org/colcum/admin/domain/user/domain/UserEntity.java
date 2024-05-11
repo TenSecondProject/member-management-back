@@ -29,7 +29,7 @@ import java.util.Set;
 @Table(name = "users")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@ToString
+@ToString(exclude = {"bookmarks"})
 public class UserEntity extends BaseEntity {
 
     @Id

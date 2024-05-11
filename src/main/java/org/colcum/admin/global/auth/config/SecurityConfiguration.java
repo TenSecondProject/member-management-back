@@ -1,5 +1,6 @@
 package org.colcum.admin.global.auth.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.colcum.admin.domain.user.domain.type.UserType;
 import org.colcum.admin.global.auth.api.AuthenticationFailureHandler;
@@ -50,7 +51,7 @@ public class SecurityConfiguration {
             .formLogin(
                 form -> form
                     .permitAll()
-                    .successHandler(new AuthenticationSuccessHandler(jwt()))
+                    .successHandler(new AuthenticationSuccessHandler(jwt(), new ObjectMapper()))
                     .failureHandler(new AuthenticationFailureHandler())
             );
         return http.build();

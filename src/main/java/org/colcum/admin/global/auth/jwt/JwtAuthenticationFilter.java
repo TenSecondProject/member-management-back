@@ -1,6 +1,7 @@
 package org.colcum.admin.global.auth.jwt;
 
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -9,8 +10,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.auth.application.UserAuthenticationService;
+import org.colcum.admin.global.common.api.dto.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.replaceAll;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -34,6 +39,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final Jwt jwt;
 
     private final UserAuthenticationService userAuthenticationService;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public JwtAuthenticationFilter(Jwt jwt, UserAuthenticationService userAuthenticationService) {
         this.jwt = jwt;
@@ -61,6 +68,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     }
 
+                } catch (TokenExpiredException e) {
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<Void>(HttpStatus.FORBIDDEN.value(), e.getMessage(), null)));
                 } catch (Exception e) {
                     log.error("Jwt processing failed: {}", e.getMessage());
                 }
