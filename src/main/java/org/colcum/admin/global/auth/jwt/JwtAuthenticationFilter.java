@@ -4,13 +4,12 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.auth.application.UserAuthenticationService;
 import org.colcum.admin.global.common.api.dto.ApiResponse;
+import org.colcum.admin.global.common.application.RedisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,7 +18,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -27,10 +25,10 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
-import static java.util.Collections.replaceAll;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -40,11 +38,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserAuthenticationService userAuthenticationService;
 
+    private final RedisService redisService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public JwtAuthenticationFilter(Jwt jwt, UserAuthenticationService userAuthenticationService) {
+    public JwtAuthenticationFilter(Jwt jwt, UserAuthenticationService userAuthenticationService, RedisService redisService) {
         this.jwt = jwt;
         this.userAuthenticationService = userAuthenticationService;
+        this.redisService = redisService;
     }
 
     @Override
@@ -71,7 +72,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 } catch (TokenExpiredException e) {
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                     response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<Void>(HttpStatus.FORBIDDEN.value(), e.getMessage(), null)));
+
+                    if (Objects.isNull(request.getHeader("refresh"))) {
+                        response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<Void>(HttpStatus.FORBIDDEN.value(), e.getMessage(), null)));
+                        return;
+                    }
+
+                    String refreshTokenKey = request.getHeader("refresh");
+                    if (redisService.isRefreshTokenExpired(refreshTokenKey)) {
+                        response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<Void>(HttpStatus.FORBIDDEN.value(), e.getMessage(), null)));
+                        return;
+                    }
+
+                    Long userId = redisService.getUserIdInRefreshToken(refreshTokenKey);
+                    String role = redisService.getUserRoleInRefreshToken(refreshTokenKey);
+
+                    String accessToken = jwt.sign(Jwt.Claims.of(userId, new String[]{role}));
+                    response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<>(HttpStatus.OK.value(), e.getMessage(), accessToken)));
                 } catch (Exception e) {
                     log.error("Jwt processing failed: {}", e.getMessage());
                 }

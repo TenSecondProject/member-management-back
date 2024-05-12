@@ -11,6 +11,7 @@ import org.colcum.admin.global.auth.application.UserAuthenticationService;
 import org.colcum.admin.global.auth.jwt.Jwt;
 import org.colcum.admin.global.auth.jwt.JwtAuthenticationFilter;
 import org.colcum.admin.global.auth.jwt.JwtConfigure;
+import org.colcum.admin.global.common.application.RedisService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +35,7 @@ public class SecurityConfiguration {
 
     private final JwtConfigure jwtConfigure;
     private final UserAuthenticationService userAuthenticationService;
+    private final RedisService redisService;
 
     @Bean
     protected SecurityFilterChain config(HttpSecurity http) throws Exception {
@@ -46,12 +48,12 @@ public class SecurityConfiguration {
                     .requestMatchers("/api/**").hasRole(UserType.STAFF.name())
                     .anyRequest().authenticated()
             )
-            .addFilterBefore(new JwtAuthenticationFilter(jwt(), userAuthenticationService), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new JwtAuthenticationFilter(jwt(), userAuthenticationService, redisService), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new LoggingFilter(), SecurityContextHolderFilter.class)
             .formLogin(
                 form -> form
                     .permitAll()
-                    .successHandler(new AuthenticationSuccessHandler(jwt(), new ObjectMapper()))
+                    .successHandler(new AuthenticationSuccessHandler(jwt(), new ObjectMapper(), redisService))
                     .failureHandler(new AuthenticationFailureHandler())
             );
         return http.build();
@@ -72,7 +74,7 @@ public class SecurityConfiguration {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwt(), userAuthenticationService);
+        return new JwtAuthenticationFilter(jwt(), userAuthenticationService, redisService);
     }
 
     @Bean
