@@ -9,7 +9,6 @@ import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.auth.api.dto.RefreshToken;
 import org.colcum.admin.global.auth.jwt.Jwt;
 import org.colcum.admin.global.common.application.RedisService;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,7 +19,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -41,14 +39,16 @@ public class AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccess
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");
 
-            Map<String, Object> tokens = new HashMap<>();
-            tokens.put("access_token", accessToken);
-            tokens.put("refresh_token", refreshToken);
-            String jsonString = objectMapper.writeValueAsString(tokens);
-            PrintWriter out = response.getWriter();
-            out.print(jsonString);
-            out.flush();
+            Map<String, Object> tokens = getTokenMap(accessToken, refreshToken);
+            response.getWriter().write(objectMapper.writeValueAsString(tokens));
         }
+    }
+
+    public static Map<String, Object> getTokenMap(String accessToken, RefreshToken refreshToken) {
+        Map<String, Object> tokens = new HashMap<>();
+        tokens.put("access_token", accessToken);
+        tokens.put("refresh_token", refreshToken);
+        return tokens;
     }
 
     private String generateToken(UserEntity user) {

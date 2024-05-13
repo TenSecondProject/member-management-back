@@ -38,14 +38,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final UserAuthenticationService userAuthenticationService;
 
-    private final RedisService redisService;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public JwtAuthenticationFilter(Jwt jwt, UserAuthenticationService userAuthenticationService, RedisService redisService) {
+    public JwtAuthenticationFilter(Jwt jwt, UserAuthenticationService userAuthenticationService) {
         this.jwt = jwt;
         this.userAuthenticationService = userAuthenticationService;
-        this.redisService = redisService;
     }
 
     @Override
@@ -72,23 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 } catch (TokenExpiredException e) {
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                     response.setCharacterEncoding("UTF-8");
-
-                    if (Objects.isNull(request.getHeader("refresh"))) {
-                        response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<Void>(HttpStatus.FORBIDDEN.value(), e.getMessage(), null)));
-                        return;
-                    }
-
-                    String refreshTokenKey = request.getHeader("refresh");
-                    if (redisService.isRefreshTokenExpired(refreshTokenKey)) {
-                        response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<Void>(HttpStatus.FORBIDDEN.value(), e.getMessage(), null)));
-                        return;
-                    }
-
-                    Long userId = redisService.getUserIdInRefreshToken(refreshTokenKey);
-                    String role = redisService.getUserRoleInRefreshToken(refreshTokenKey);
-
-                    String accessToken = jwt.sign(Jwt.Claims.of(userId, new String[]{role}));
-                    response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<>(HttpStatus.OK.value(), e.getMessage(), accessToken)));
+                    response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<Void>(HttpStatus.FORBIDDEN.value(), e.getMessage(), null)));
                 } catch (Exception e) {
                     log.error("Jwt processing failed: {}", e.getMessage());
                 }

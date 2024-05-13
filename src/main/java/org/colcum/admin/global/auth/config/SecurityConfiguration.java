@@ -45,10 +45,11 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(
                 request -> request
                     .requestMatchers("/docs/**").permitAll()
+                    .requestMatchers("/api/v1/users/token/refresh").permitAll()
                     .requestMatchers("/api/**").hasRole(UserType.STAFF.name())
                     .anyRequest().authenticated()
             )
-            .addFilterBefore(new JwtAuthenticationFilter(jwt(), userAuthenticationService, redisService), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new JwtAuthenticationFilter(jwt(), userAuthenticationService), UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(new LoggingFilter(), SecurityContextHolderFilter.class)
             .formLogin(
                 form -> form
@@ -74,7 +75,7 @@ public class SecurityConfiguration {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwt(), userAuthenticationService, redisService);
+        return new JwtAuthenticationFilter(jwt(), userAuthenticationService);
     }
 
     @Bean

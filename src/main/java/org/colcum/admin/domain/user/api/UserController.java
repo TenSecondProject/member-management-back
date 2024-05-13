@@ -1,18 +1,23 @@
 package org.colcum.admin.domain.user.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.colcum.admin.global.Error.InvalidAuthenticationException;
+import org.colcum.admin.global.auth.api.dto.RefreshToken;
 import org.colcum.admin.global.auth.jwt.Jwt;
-import org.colcum.admin.global.auth.jwt.JwtAuthentication;
-import org.colcum.admin.global.common.api.dto.ApiResponse;
+import org.colcum.admin.global.common.application.RedisService;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
+
+import static org.colcum.admin.global.auth.api.AuthenticationSuccessHandler.getTokenMap;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -20,23 +25,28 @@ import java.util.Objects;
 public class UserController {
 
     private final Jwt jwt;
+    private final RedisService redisService;
+    private final ObjectMapper objectMapper;
 
-    @GetMapping("/refresh")
+    @PutMapping("/token/refresh")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<String> inquirePostsWithBookmarked(
-        @AuthenticationPrincipal JwtAuthentication authentication
-    ) {
-        if (Objects.isNull(authentication)) {
-            throw new InvalidAuthenticationException("해당 refresh token은 잘못되었습니다. 다시 로그인 해주십시오.");
+    public void inquirePostsWithBookmarked(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        if (Objects.isNull(request.getHeader("refresh"))) {
+            throw new IllegalArgumentException("refresh 토큰이 존재하지 않습니다.");
         }
-        String accessToken = jwt.sign(
-            Jwt.Claims.of(
-                authentication.userEntity.getId(),
-                new String[]{authentication.userEntity.getUserType().getRole()}
-            ),
-            Jwt.ACCESS_TOKEN_EXPIRY_MINUTE
-        );
-        return new ApiResponse<>(HttpStatus.OK.value(), "success", accessToken);
+
+        String refreshTokenKey = request.getHeader("refresh");
+        if (redisService.isRefreshTokenExpired(refreshTokenKey)) {
+            throw new IllegalArgumentException("refresh 토큰이 만료되었습니다.");
+        }
+
+        Long userId = redisService.getUserIdInRefreshToken(refreshTokenKey);
+        String role = redisService.getUserRoleInRefreshToken(refreshTokenKey);
+
+        String accessToken = jwt.sign(Jwt.Claims.of(userId, new String[]{role}));
+        RefreshToken refreshToken = redisService.renewRefreshToken(refreshTokenKey);
+        Map<String, Object> tokens = getTokenMap(accessToken, refreshToken);
+        response.getWriter().write(objectMapper.writeValueAsString(tokens));
     }
 
 }

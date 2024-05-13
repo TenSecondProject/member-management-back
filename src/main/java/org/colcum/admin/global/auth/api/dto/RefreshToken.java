@@ -18,8 +18,6 @@ public class RefreshToken {
 
     private String uuid;
 
-    @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDateTime expiryDate;
+    private String expiryDate;
 
 }
