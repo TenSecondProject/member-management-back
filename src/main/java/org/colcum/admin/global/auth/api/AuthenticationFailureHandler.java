@@ -5,8 +5,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
-import org.colcum.admin.global.Error.InvalidAuthenticationException;
 import org.colcum.admin.global.common.api.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;

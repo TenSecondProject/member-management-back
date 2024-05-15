@@ -1,4 +1,4 @@
-package org.colcum.admin.global.Error;
+package org.colcum.admin.global.exception;
 
 public class NoTargetReceiverException extends RuntimeException {
 

@@ -15,7 +15,7 @@ import org.colcum.admin.domain.post.application.PostService;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
-import org.colcum.admin.global.Error.InvalidAuthenticationException;
+import org.colcum.admin.global.exception.InvalidAuthenticationException;
 import org.colcum.admin.global.auth.jwt.JwtAuthentication;
 import org.colcum.admin.global.common.api.dto.ApiResponse;
 import org.springframework.data.domain.Page;
