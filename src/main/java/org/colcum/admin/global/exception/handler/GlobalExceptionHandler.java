@@ -1,9 +1,11 @@
-package org.colcum.admin.global.Error.handler;
+package org.colcum.admin.global.exception.handler;
 
-import org.colcum.admin.global.Error.EmailValidationException;
-import org.colcum.admin.global.Error.InvalidAuthenticationException;
-import org.colcum.admin.global.Error.NoTargetReceiverException;
-import org.colcum.admin.global.Error.PostNotFoundException;
+import org.colcum.admin.global.exception.CommentNotFoundException;
+import org.colcum.admin.global.exception.EmailValidationException;
+import org.colcum.admin.global.exception.EmojiNotFoundException;
+import org.colcum.admin.global.exception.InvalidAuthenticationException;
+import org.colcum.admin.global.exception.NoTargetReceiverException;
+import org.colcum.admin.global.exception.PostNotFoundException;
 import org.colcum.admin.global.common.api.dto.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -15,7 +17,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    @ExceptionHandler(value = {PostNotFoundException.class, UsernameNotFoundException.class})
+    @ExceptionHandler(value = {
+        PostNotFoundException.class,
+        UsernameNotFoundException.class,
+        EmojiNotFoundException.class,
+        CommentNotFoundException.class
+    })
     public ApiResponse<Void> handleNotFoundException(Exception ex) {
         return new ApiResponse<>(HttpStatus.NOT_FOUND.value(), ex.getMessage(), null);
     }

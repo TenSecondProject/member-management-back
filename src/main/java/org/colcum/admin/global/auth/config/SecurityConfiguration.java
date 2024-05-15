@@ -1,5 +1,6 @@
 package org.colcum.admin.global.auth.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.colcum.admin.domain.user.domain.type.UserType;
 import org.colcum.admin.global.auth.api.AuthenticationFailureHandler;
@@ -10,6 +11,7 @@ import org.colcum.admin.global.auth.application.UserAuthenticationService;
 import org.colcum.admin.global.auth.jwt.Jwt;
 import org.colcum.admin.global.auth.jwt.JwtAuthenticationFilter;
 import org.colcum.admin.global.auth.jwt.JwtConfigure;
+import org.colcum.admin.global.common.application.RedisUserService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +35,7 @@ public class SecurityConfiguration {
 
     private final JwtConfigure jwtConfigure;
     private final UserAuthenticationService userAuthenticationService;
+    private final RedisUserService redisUserService;
 
     @Bean
     protected SecurityFilterChain config(HttpSecurity http) throws Exception {
@@ -42,6 +45,7 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(
                 request -> request
                     .requestMatchers("/docs/**").permitAll()
+                    .requestMatchers("/api/v1/users/token/refresh").permitAll()
                     .requestMatchers("/api/**").hasRole(UserType.STAFF.name())
                     .anyRequest().authenticated()
             )
@@ -50,7 +54,7 @@ public class SecurityConfiguration {
             .formLogin(
                 form -> form
                     .permitAll()
-                    .successHandler(new AuthenticationSuccessHandler(jwt()))
+                    .successHandler(new AuthenticationSuccessHandler(jwt(), new ObjectMapper(), redisUserService))
                     .failureHandler(new AuthenticationFailureHandler())
             );
         return http.build();

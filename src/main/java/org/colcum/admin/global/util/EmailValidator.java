@@ -1,6 +1,6 @@
 package org.colcum.admin.global.util;
 
-import org.colcum.admin.global.Error.EmailValidationException;
+import org.colcum.admin.global.exception.EmailValidationException;
 import org.springframework.util.StringUtils;
 
 import java.util.regex.Pattern;

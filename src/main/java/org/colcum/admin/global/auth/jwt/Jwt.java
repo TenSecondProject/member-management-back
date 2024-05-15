@@ -36,7 +36,7 @@ public class Jwt {
         builder.withIssuer(issuer);
         builder.withIssuedAt(now);
         if (expirySeconds > 0) {
-            builder.withExpiresAt(new Date(now.getTime() + expirySeconds * 1_000L));
+            builder.withExpiresAt(new Date(now.getTime() + expirySeconds));
         }
         builder.withClaim("userId", claims.userId);
         builder.withArrayClaim("roles", claims.roles);
