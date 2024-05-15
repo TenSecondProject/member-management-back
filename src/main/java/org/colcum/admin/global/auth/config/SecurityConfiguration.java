@@ -11,7 +11,7 @@ import org.colcum.admin.global.auth.application.UserAuthenticationService;
 import org.colcum.admin.global.auth.jwt.Jwt;
 import org.colcum.admin.global.auth.jwt.JwtAuthenticationFilter;
 import org.colcum.admin.global.auth.jwt.JwtConfigure;
-import org.colcum.admin.global.common.application.RedisService;
+import org.colcum.admin.global.common.application.RedisUserService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -35,7 +35,7 @@ public class SecurityConfiguration {
 
     private final JwtConfigure jwtConfigure;
     private final UserAuthenticationService userAuthenticationService;
-    private final RedisService redisService;
+    private final RedisUserService redisUserService;
 
     @Bean
     protected SecurityFilterChain config(HttpSecurity http) throws Exception {
@@ -54,7 +54,7 @@ public class SecurityConfiguration {
             .formLogin(
                 form -> form
                     .permitAll()
-                    .successHandler(new AuthenticationSuccessHandler(jwt(), new ObjectMapper(), redisService))
+                    .successHandler(new AuthenticationSuccessHandler(jwt(), new ObjectMapper(), redisUserService))
                     .failureHandler(new AuthenticationFailureHandler())
             );
         return http.build();

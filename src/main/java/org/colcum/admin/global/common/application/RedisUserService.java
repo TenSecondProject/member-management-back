@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
-public class RedisService {
+public class RedisUserService {
 
     private final RedisTemplate<String, Object> refreshTokenRedisTemplate;
     private static final String REDIS_USER_PREFIX = "user:";

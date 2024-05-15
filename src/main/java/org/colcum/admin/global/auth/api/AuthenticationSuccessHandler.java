@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.auth.api.dto.RefreshToken;
 import org.colcum.admin.global.auth.jwt.Jwt;
-import org.colcum.admin.global.common.application.RedisService;
+import org.colcum.admin.global.common.application.RedisUserService;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -16,7 +16,6 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,15 +25,15 @@ public class AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccess
 
     private final Jwt jwt;
     private final ObjectMapper objectMapper;
-    private final RedisService redisService;
+    private final RedisUserService redisUserService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         if (authentication instanceof UsernamePasswordAuthenticationToken token) {
             UserEntity user = (UserEntity) token.getPrincipal();
             String accessToken = generateToken(user);
-            RefreshToken refreshToken = redisService.createRefreshToken();
-            redisService.saveRefreshToken(refreshToken, user);
+            RefreshToken refreshToken = redisUserService.createRefreshToken();
+            redisUserService.saveRefreshToken(refreshToken, user);
 
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");

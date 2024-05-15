@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.colcum.admin.global.auth.api.dto.RefreshToken;
 import org.colcum.admin.global.auth.jwt.Jwt;
-import org.colcum.admin.global.common.application.RedisService;
+import org.colcum.admin.global.common.application.RedisUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,26 +25,26 @@ import static org.colcum.admin.global.auth.api.AuthenticationSuccessHandler.getT
 public class UserController {
 
     private final Jwt jwt;
-    private final RedisService redisService;
+    private final RedisUserService redisUserService;
     private final ObjectMapper objectMapper;
 
     @PutMapping("/token/refresh")
     @ResponseStatus(HttpStatus.OK)
-    public void inquirePostsWithBookmarked(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void renewRefreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         if (Objects.isNull(request.getHeader("refresh"))) {
             throw new IllegalArgumentException("refresh 토큰이 존재하지 않습니다.");
         }
 
         String refreshTokenKey = request.getHeader("refresh");
-        if (redisService.isRefreshTokenExpired(refreshTokenKey)) {
+        if (redisUserService.isRefreshTokenExpired(refreshTokenKey)) {
             throw new IllegalArgumentException("refresh 토큰이 만료되었습니다.");
         }
 
-        Long userId = redisService.getUserIdInRefreshToken(refreshTokenKey);
-        String role = redisService.getUserRoleInRefreshToken(refreshTokenKey);
+        Long userId = redisUserService.getUserIdInRefreshToken(refreshTokenKey);
+        String role = redisUserService.getUserRoleInRefreshToken(refreshTokenKey);
 
         String accessToken = jwt.sign(Jwt.Claims.of(userId, new String[]{role}));
-        RefreshToken refreshToken = redisService.renewRefreshToken(refreshTokenKey);
+        RefreshToken refreshToken = redisUserService.renewRefreshToken(refreshTokenKey);
         Map<String, Object> tokens = getTokenMap(accessToken, refreshToken);
         response.getWriter().write(objectMapper.writeValueAsString(tokens));
     }

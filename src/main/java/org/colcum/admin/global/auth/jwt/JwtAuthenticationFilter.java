@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.auth.application.UserAuthenticationService;
 import org.colcum.admin.global.common.api.dto.ApiResponse;
-import org.colcum.admin.global.common.application.RedisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,7 +24,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
