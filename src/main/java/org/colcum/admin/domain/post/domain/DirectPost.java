@@ -19,11 +19,11 @@ import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.common.domain.BaseEntity;
 
 @Entity
-@Table(name = "sent_post")
+@Table(name = "direct_post")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @ToString
-public class DirectedPost extends BaseEntity {
+public class DirectPost extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,7 +40,7 @@ public class DirectedPost extends BaseEntity {
     @Column(name = "is_raed")
     private boolean isRead = false;
 
-    public DirectedPost(PostEntity postEntity, UserEntity receiver) {
+    public DirectPost(PostEntity postEntity, UserEntity receiver) {
         this.postEntity = postEntity;
         this.receiver = receiver;
     }

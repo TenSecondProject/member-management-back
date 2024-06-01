@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static org.colcum.admin.domain.post.domain.QCommentEntity.commentEntity;
-import static org.colcum.admin.domain.post.domain.QDirectedPost.directedPost;
+import static org.colcum.admin.domain.post.domain.QDirectPost.directPost;
 import static org.colcum.admin.domain.post.domain.QEmojiReactionEntity.emojiReactionEntity;
 import static org.colcum.admin.domain.post.domain.QPostEntity.postEntity;
 import static org.colcum.admin.domain.user.domain.QUserEntity.userEntity;
@@ -66,12 +66,12 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
         BooleanBuilder builder = getPostBooleanBuilder(condition);
         List<PostEntity> fetch = queryFactory
             .select(postEntity)
-            .from(directedPost)
-            .innerJoin(directedPost.postEntity, postEntity)
+            .from(directPost)
+            .innerJoin(directPost.postEntity, postEntity)
             .innerJoin(postEntity.user, userEntity)
             .leftJoin(postEntity.commentEntities, commentEntity)
             .leftJoin(postEntity.emojiReactionEntities, emojiReactionEntity).fetchJoin()
-            .where(builder.and(directedPost.receiver.id.eq(receivedUser.getId())))
+            .where(builder.and(directPost.receiver.id.eq(receivedUser.getId())))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
             .groupBy(postEntity.id)
