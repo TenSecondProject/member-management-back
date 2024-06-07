@@ -50,8 +50,7 @@ public class NotificationEntity extends BaseEntity {
     @JoinColumn(name = "sender_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private UserEntity sender;
 
-    @OneToMany
-    @JoinColumn(name = "receiver_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @OneToMany(mappedBy = "id")
     private List<UserEntity> receivers = new ArrayList<>();
 
 }

@@ -12,28 +12,32 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/notification")
+@RequestMapping("/api/v1/notifications")
 public class NotificationSseController {
 
     private final NotificationService notificationService;
 
-    @GetMapping(value = "/connect/receiverId", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public ApiResponse<SseEmitter> connect(@PathVariable Long receiverId) {
-        notificationService.add(receiverId);
-        return new ApiResponse<>(HttpStatus.OK.value(), "connected", null);
+    @GetMapping(value = "/connect/{receiverId}", produces = "text/event-stream")
+    @ResponseStatus(value = HttpStatus.OK)
+    public SseEmitter connect(@PathVariable("receiverId") Long receiverId) {
+        SseEmitter sseEmitter = notificationService.add(receiverId);
+        return sseEmitter;
     }
 
     @PostMapping("/send")
-    public void sendNotification(
+    @ResponseStatus(value = HttpStatus.OK)
+    public ApiResponse<Void> sendNotification(
         @RequestBody NotificationSendRequest sendRequest
     ) {
         notificationService.sendNotification(sendRequest);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
     }
 
 }

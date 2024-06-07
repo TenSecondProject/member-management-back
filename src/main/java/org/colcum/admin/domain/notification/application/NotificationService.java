@@ -3,7 +3,6 @@ package org.colcum.admin.domain.notification.application;
 import lombok.extern.slf4j.Slf4j;
 import org.colcum.admin.domain.notification.api.dto.NotificationSendRequest;
 import org.springframework.jmx.export.notification.UnableToSendNotificationException;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -17,8 +16,10 @@ public class NotificationService {
 
     private final Map<Long, SseEmitter> emitters = new ConcurrentHashMap<>();
 
+    private final Long CONNECTION_TIME = 60 * 1000L;
+
     public SseEmitter add(Long receiverId) {
-        SseEmitter emitter = new SseEmitter();
+        SseEmitter emitter = new SseEmitter(CONNECTION_TIME);
         this.emitters.put(receiverId, emitter);
         log.info("new emitter add: {}", emitter);
         log.info("emitter list size: {}", emitters.size());
@@ -47,7 +48,9 @@ public class NotificationService {
             if (sseEmitter == null) continue;
 
             try {
-                sseEmitter.send(SseEmitter.event().name("notification").data(sendRequest.getMessage()));
+                sseEmitter.send(SseEmitter.event().name("notification").data(sendRequest));
+                log.info("send success, senderId: {}, receiverId: {}", sendRequest.getSenderId(), receiverId);
+
             } catch (Exception e) {
                 log.info("send fail, senderId: {}, receiverId: {}", sendRequest.getSenderId(), receiverId);
             }
