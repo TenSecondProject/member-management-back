@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  web:
+    image: member-management-admin
+    container_name: member-management-admin-container
+    env_file: .env
+    ports:
+      - "9102:9102"
+    restart: always
+    networks:
+      - mysql_project-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+
+networks:
+  mysql_project-network:
+    external: true
