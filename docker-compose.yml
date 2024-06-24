@@ -9,10 +9,10 @@ services:
       - "9102:9102"
     restart: always
     networks:
-      - mysql_project-network
+      - back-tier
     environment:
       - SPRING_PROFILES_ACTIVE=dev
 
 networks:
-  mysql_project-network:
+  back-tier:
     external: true
