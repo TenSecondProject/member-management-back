@@ -1,17 +1,33 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:7.2.5-alpine
+    container_name: redis-container
+    ports:
+      - ${REDIS_BINDING_PORT}:${REDIS_PORT}
+    command: redis-server /usr/local/etc/redis/redis.conf
+    volumes:
+      - ${REDIS_DATA_PATH}:/data
+      - ${REDIS_DEFAULT_CONFIG_FILE}:/usr/local/etc/redis/redis.conf
+    restart: always
+    env_file: .env
+    networks:
+      - back-tier
+
   web:
     image: member-management-admin
     container_name: member-management-admin-container
     env_file: .env
     ports:
-      - "9102:9102"
+      - ${SERVER_BINDING_PORT}:${SERVER_PORT}
     restart: always
     networks:
       - back-tier
     environment:
       - SPRING_PROFILES_ACTIVE=dev
+    depends_on:
+      - redis
 
 networks:
   back-tier:
