@@ -46,6 +46,7 @@ public class SecurityConfiguration {
                 request -> request
                     .requestMatchers("/docs/**").permitAll()
                     .requestMatchers("/api/v1/users/token/refresh").permitAll()
+                    .requestMatchers("/api/v1/notifications/**").permitAll()
                     .requestMatchers("/api/**").hasRole(UserType.STAFF.name())
                     .anyRequest().authenticated()
             )

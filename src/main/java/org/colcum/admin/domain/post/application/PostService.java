@@ -15,9 +15,9 @@ import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
 import org.colcum.admin.domain.post.dao.CommentRepository;
 import org.colcum.admin.domain.post.dao.EmojiReactionRepository;
 import org.colcum.admin.domain.post.dao.PostRepository;
-import org.colcum.admin.domain.post.dao.DirectedPostRepository;
+import org.colcum.admin.domain.post.dao.DirectPostRepository;
 import org.colcum.admin.domain.post.domain.CommentEntity;
-import org.colcum.admin.domain.post.domain.DirectedPost;
+import org.colcum.admin.domain.post.domain.DirectPost;
 import org.colcum.admin.domain.post.domain.EmojiReactionEntity;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
@@ -48,7 +48,7 @@ public class PostService {
 
     private final CommentRepository commentRepository;
 
-    private final DirectedPostRepository directedPostRepository;
+    private final DirectPostRepository directedPostRepository;
 
     private final EmojiReactionRepository emojiReactionRepository;
 
@@ -192,10 +192,11 @@ public class PostService {
         emojiReactionRepository.save(emojiReactionEntity);
     }
 
+    @Transactional
     private void createDirectedPosts(PostCreateDto dto, PostEntity post, UserEntity user) {
         for (Long targetUserId: dto.getSendTargetUserIds()) {
-            DirectedPost directedPost = new DirectedPost(post, user);
-            directedPostRepository.save(directedPost);
+            DirectPost directPost = new DirectPost(post, user);
+            directedPostRepository.save(directPost);
         }
     }
 

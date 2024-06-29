@@ -16,10 +16,10 @@ import org.colcum.admin.domain.post.dao.CommentRepository;
 import org.colcum.admin.domain.post.dao.EmojiReactionRepository;
 import org.colcum.admin.domain.post.dao.PostRepository;
 import org.colcum.admin.domain.post.domain.CommentEntity;
-import org.colcum.admin.domain.post.domain.DirectedPost;
+import org.colcum.admin.domain.post.domain.DirectPost;
 import org.colcum.admin.domain.post.domain.EmojiReactionEntity;
 import org.colcum.admin.domain.post.domain.PostEntity;
-import org.colcum.admin.domain.post.dao.DirectedPostRepository;
+import org.colcum.admin.domain.post.dao.DirectPostRepository;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
@@ -70,7 +70,7 @@ class PostServiceTest {
     private CommentRepository commentRepository;
 
     @Autowired
-    private DirectedPostRepository directedPostRepository;
+    private DirectPostRepository directedPostRepository;
 
     @Autowired
     private EmojiReactionRepository emojiReactionRepository;
@@ -554,8 +554,8 @@ class PostServiceTest {
         // given
         PostEntity post = createFixturePost("title", "content", user);
         postRepository.save(post);
-        DirectedPost directedPost = new DirectedPost(post, user);
-        directedPostRepository.save(directedPost);
+        DirectPost directPost = new DirectPost(post, user);
+        directedPostRepository.save(directPost);
 
         // when
         List<ReceivedPostSummaryResponseDto> receivedPostSummaryDto = postService.findReceivedPostSummary(user.getId());
@@ -573,8 +573,8 @@ class PostServiceTest {
         // given
         PostEntity post = createFixtureDirectedPost("title", "content", user);
         postRepository.save(post);
-        DirectedPost directedPost = new DirectedPost(post, user);
-        directedPostRepository.save(directedPost);
+        DirectPost directPost = new DirectPost(post, user);
+        directedPostRepository.save(directPost);
 
         // when
         Page<PostResponseDto> posts = postService.findReceivedPosts(null, null, null, user, PageRequest.ofSize(10));
