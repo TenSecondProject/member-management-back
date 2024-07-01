@@ -1,0 +1,21 @@
+management:
+  endpoint:
+    loggers:
+      enabled: true
+    health:
+      enabled: true
+    info:
+      enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+
+  endpoints:
+    web:
+      exposure:
+        include: "loggers,health,info,metrics,prometheus"
+
+#      cors:
+#        allowed-origins: "*"
+#        allowed-methods: GET
