@@ -1,4 +1,7 @@
 spring:
+  config:
+    import: actuator.yaml
+
   profiles:
     default: local
     include: oauth, aws
@@ -50,8 +53,8 @@ spring:
       mode: always
   data:
     redis:
-      port: 6379
-      host: 127.0.0.1
+      port: ${REDIS_PORT}
+      host: localhost
       password: ${REDIS_PASSWORD}
 
   jpa:
@@ -83,8 +86,8 @@ spring:
       on-profile: dev
   data:
     redis:
-      port: 6379
-      host: 127.0.0.1
+      port: ${REDIS_PORT}
+      host: redis
       password: ${REDIS_PASSWORD}
   datasource:
     url: ${DB_URL}
@@ -116,7 +119,7 @@ spring:
   data:
     redis:
       port: 6379
-      host: 127.0.0.1
+      host: localhost
       password: ${REDIS_PASSWORD}
   datasource:
     url: ${DB_URL}

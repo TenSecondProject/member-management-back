@@ -5,7 +5,7 @@ services:
     image: redis:7.2.5-alpine
     container_name: redis-container
     ports:
-      - ${REDIS_BINDING_PORT}:${REDIS_PORT}
+      - "6379:6379"
     command: redis-server /usr/local/etc/redis/redis.conf
     volumes:
       - ${REDIS_DATA_PATH}:/data
@@ -22,12 +22,33 @@ services:
     ports:
       - ${SERVER_BINDING_PORT}:${SERVER_PORT}
     restart: always
+    build:
+      context: .
+      dockerfile: ./Dockerfile
     networks:
       - back-tier
-    environment:
-      - SPRING_PROFILES_ACTIVE=dev
     depends_on:
       - redis
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./src/main/resources/prometheus.yaml:/etc/prometheus/prometheus.yaml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+    ports:
+      - "9090:9090"
+    networks:
+      - back-tier
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - back-tier
 
 networks:
   back-tier:
