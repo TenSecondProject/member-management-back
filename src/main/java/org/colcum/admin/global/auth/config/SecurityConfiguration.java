@@ -44,7 +44,6 @@ public class SecurityConfiguration {
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(
                 request -> request
-                    .requestMatchers("/docs/**").permitAll()
                     .requestMatchers("/api/v1/users/token/refresh").permitAll()
                     .requestMatchers("/api/v1/notifications/**").permitAll()
                     .requestMatchers("/api/**").hasRole(UserType.STAFF.name())
@@ -72,6 +71,12 @@ public class SecurityConfiguration {
     public WebSecurityCustomizer configureEnableDocs() {
         return web -> web.ignoring()
             .requestMatchers("/docs/**");
+    }
+
+    @Bean
+    public WebSecurityCustomizer configureActuator() {
+        return web -> web.ignoring()
+            .requestMatchers("/actuator/**");
     }
 
     @Bean
