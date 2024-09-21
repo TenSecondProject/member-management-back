@@ -1,4 +1,12 @@
 INSERT INTO users(id, email, password, name, branch, user_type, deleted, created_at, created_by, modified_at, modified_by) values (9999, 'tester@gmail.com', '$2a$10$uIlQaixOv2qTgs4byVTuI.AkAezXxJzjB6O3lG4cMbKy1SVFtRvzi','tester', 'JONGRO', 'STAFF', 'N', current_date() , 'tester', current_date() , 'tester');
+INSERT INTO users(id, email, password, name, branch, user_type, deleted, created_at, created_by, modified_at, modified_by) values (9998, 'tester2@gmail.com', '$2a$10$uIlQaixOv2qTgs4byVTuI.AkAezXxJzjB6O3lG4cMbKy1SVFtRvzi','tester2', 'JONGRO', 'STAFF', 'N', current_date() , 'tester2', current_date() , 'tester2');
+
+-- POST
+INSERT INTO posts (category, content, created_at, created_by, deleted, expired_date, modified_at, modified_by, status, title, user_id, id) values ('ANNOUNCEMENT', 'Lorem Ipsum is simply dummy text', '2024-07-31T19:24:40.339024600', 'tester@gmail.com', 'false', '2024-04-10T23:20', '2024-07-31T19:24:40.339024600', 'tester@gmail.com', 'IN_PROGRESS', 'title', 9999, 1000);
+INSERT INTO posts (category, content, created_at, created_by, deleted, expired_date, modified_at, modified_by, status, title, user_id, id) values ('ANNOUNCEMENT', 'Lorem Ipsum is simply dummy text', '2024-07-31T19:24:40.339024600', 'tester@gmail.com', 'false', '2024-04-10T23:20', '2024-07-31T19:24:40.339024600', 'tester@gmail.com', 'IN_PROGRESS', 'title', 9999, 1001);
+INSERT INTO posts (category, content, created_at, created_by, deleted, expired_date, modified_at, modified_by, status, title, user_id, id) values ('ANNOUNCEMENT', 'Lorem Ipsum is simply dummy text', '2024-07-31T19:24:40.339024600', 'tester@gmail.com', 'false', '2024-04-10T23:20', '2024-07-31T19:24:40.339024600', 'tester@gmail.com', 'IN_PROGRESS', 'title', 9999, 1002);
+INSERT INTO posts (category, content, created_at, created_by, deleted, expired_date, modified_at, modified_by, status, title, user_id, id) values ('ANNOUNCEMENT', 'Lorem Ipsum is simply dummy text', '2024-07-31T19:24:40.339024600', 'tester@gmail.com', 'false', '2024-04-10T23:20', '2024-07-31T19:24:40.339024600', 'tester@gmail.com', 'IN_PROGRESS', 'title', 9999, 1003);
+INSERT INTO posts (category, content, created_at, created_by, deleted, expired_date, modified_at, modified_by, status, title, user_id, id) values ('ANNOUNCEMENT', 'Lorem Ipsum is simply dummy text', '2024-07-31T19:24:40.339024600', 'tester@gmail.com', 'false', '2024-04-10T23:20', '2024-07-31T19:24:40.339024600', 'tester@gmail.com', 'IN_PROGRESS', 'title', 9999, 1004);
 
 
 
