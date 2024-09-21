@@ -1,6 +1,7 @@
 package org.colcum.admin.domain.post.application;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
@@ -32,12 +33,14 @@ import org.colcum.admin.global.exception.InvalidAuthenticationException;
 import org.colcum.admin.global.exception.PostNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -53,9 +56,10 @@ public class PostService {
     private final EmojiReactionRepository emojiReactionRepository;
 
     @Transactional(readOnly = true)
-    public Page<PostResponseDto> findByCriteria(SearchType searchType, String searchValue, List<PostCategory> categories, List<PostStatus> statuses, Pageable pageable) {
+    public Page<PostResponseDto> findByCriteria(SearchType searchType, String searchValue, List<PostCategory> categories, List<PostStatus> statuses, UserEntity userEntity, Pageable pageable) {
         return postRepository.search(
             new PostSearchCondition(searchType, searchValue, categories, statuses),
+            userEntity,
             pageable
         );
     }
@@ -109,14 +113,33 @@ public class PostService {
         return postRepository.findWithBookmarked(user.getId());
     }
 
+    @Transactional(readOnly = true)
+    public Page<PostResponseDto> findByCriteriaWithBookmarked(
+        SearchType searchType,
+        String searchValue,
+        List<PostCategory> categories,
+        List<PostStatus> statuses,
+        UserEntity user,
+        Pageable pageable
+    ) {
+        return postRepository.searchWithBookmarkedPost(
+            new PostSearchCondition(searchType, searchValue, categories, statuses),
+            user,
+            pageable
+        );
+    }
+
+
     @Transactional
     public void addBookmark(Long postId, UserEntity user) {
+        log.info("Post is bookmarked, Post Id : {}, User Id: {}", postId, user.getId());
         user.addBookmark(new Bookmark(postId));
         userRepository.save(user);
     }
 
     @Transactional
     public void removeBookmark(Long postId, UserEntity user) {
+        log.info("Bookmark is removed , Post Id : {}, User Id: {}", postId, user.getId());
         user.removeBookmark(new Bookmark(postId));
         userRepository.save(user);
     }
@@ -185,17 +208,19 @@ public class PostService {
 
     @Transactional
     public void removeEmojiOnPost(Long postId, UserEntity user, EmojiDeleteDto dto) {
-        EmojiReactionEntity emojiReactionEntity = emojiReactionRepository.findByPostEntity_IdAndUser_IdAndContent(postId, user.getId(), dto.getContent()).orElseThrow(() -> {
+        EmojiReactionEntity emojiReactionEntity = emojiReactionRepository.findByDeletedIsFalseAndPostEntity_IdAndUser_IdAndContent(postId, user.getId(), dto.getContent()).orElseThrow(() -> {
             throw new EmojiNotFoundException("게시글에 등록된 이모지 중, 해당 이모지는 찾을 수 없습니다.");
         });
         emojiReactionEntity.delete();
         emojiReactionRepository.save(emojiReactionEntity);
     }
 
-    @Transactional
     private void createDirectedPosts(PostCreateDto dto, PostEntity post, UserEntity user) {
-        for (Long targetUserId: dto.getSendTargetUserIds()) {
-            DirectPost directPost = new DirectPost(post, user);
+        for (Long targetUserId : dto.getSendTargetUserIds()) {
+            UserEntity TargetUser = userRepository.findById(targetUserId).orElseThrow(() -> {
+                    throw new UsernameNotFoundException("대상 유저는 존재하지 않습니다.");
+            });
+            DirectPost directPost = new DirectPost(post, TargetUser);
             directedPostRepository.save(directPost);
         }
     }

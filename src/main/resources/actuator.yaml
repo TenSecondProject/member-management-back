@@ -11,11 +11,6 @@ management:
     prometheus:
       enabled: true
 
-  endpoints:
-    web:
-      exposure:
-        include: "loggers,health,info,metrics,prometheus"
-
 #      cors:
 #        allowed-origins: "*"
 #        allowed-methods: GET

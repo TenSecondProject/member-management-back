@@ -1,7 +1,10 @@
 package org.colcum.admin.domain.post.dao;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -10,6 +13,7 @@ import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
 import org.colcum.admin.domain.post.domain.PostEntity;
+import org.colcum.admin.domain.post.domain.QPostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.springframework.data.domain.Page;
@@ -35,18 +39,65 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Page<PostResponseDto> search(PostSearchCondition condition, Pageable pageable) {
+    public Page<PostResponseDto> search(PostSearchCondition condition, UserEntity receivedUser, Pageable pageable) {
         BooleanBuilder builder = getPostBooleanBuilder(condition);
         List<PostEntity> fetch = queryFactory
-            .select(postEntity)
+            .select(postEntity).distinct()
             .from(postEntity)
             .innerJoin(postEntity.user, userEntity)
             .leftJoin(postEntity.commentEntities, commentEntity)
             .leftJoin(postEntity.emojiReactionEntities, emojiReactionEntity).fetchJoin()
-            .where(builder)
+            .where(builder
+                .and(
+                    postEntity.category.eq(PostCategory.ANNOUNCEMENT)
+                    .or(
+                        postEntity.category.eq(PostCategory.DELIVERY)
+                        .and(
+                            JPAExpressions
+                                .selectOne()
+                                .from(directPost)
+                                .where(directPost.receiver.eq(receivedUser)
+                                    .and(directPost.postEntity.eq(postEntity))) // postEntity와 관련된 조건 추가
+                                .exists()
+                        )
+                    )
+                )
+            )
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
-            .groupBy(postEntity.id)
+            .orderBy(this.getOrderBySpecifiers(postEntity, pageable))
+            .fetch();
+
+        List<PostResponseDto> dtos = fetch.stream()
+            .map(PostResponseDto::from)
+            .toList();
+
+        JPAQuery<Long> count = queryFactory
+            .select(postEntity.count())
+            .from(postEntity)
+            .where(builder);
+
+        return PageableExecutionUtils.getPage(dtos, pageable, count::fetchCount);
+    }
+
+    @Override
+    public Page<PostResponseDto> searchWithBookmarkedPost(PostSearchCondition condition, UserEntity user, Pageable pageable) {
+        BooleanBuilder builder = getPostBooleanBuilder(condition);
+        List<PostEntity> fetch = queryFactory
+            .select(postEntity).distinct()
+            .from(postEntity)
+            .leftJoin(postEntity.commentEntities, commentEntity)
+            .leftJoin(postEntity.emojiReactionEntities, emojiReactionEntity).fetchJoin()
+            .where(postEntity.id.in(
+                    JPAExpressions
+                        .select(bookmark.postId)
+                        .from(userEntity)
+                        .join(userEntity.bookmarks, bookmark)
+                        .where(userEntity.id.eq(user.getId()))
+                ).and(builder)
+            )
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
             .fetch();
 
         List<PostResponseDto> dtos = fetch.stream()
@@ -65,7 +116,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
     public Page<PostResponseDto> searchReceivedPost(PostSearchCondition condition, UserEntity receivedUser, Pageable pageable) {
         BooleanBuilder builder = getPostBooleanBuilder(condition);
         List<PostEntity> fetch = queryFactory
-            .select(postEntity)
+            .select(postEntity).distinct()
             .from(directPost)
             .innerJoin(directPost.postEntity, postEntity)
             .innerJoin(postEntity.user, userEntity)
@@ -74,7 +125,6 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             .where(builder.and(directPost.receiver.id.eq(receivedUser.getId())))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
-            .groupBy(postEntity.id)
             .fetch();
 
         List<PostResponseDto> dtos = fetch.stream()
@@ -106,10 +156,9 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
         return Optional.ofNullable(
             queryFactory
                 .selectFrom(postEntity)
-                .leftJoin(postEntity.commentEntities, commentEntity).fetchJoin()
+                .leftJoin(postEntity.commentEntities, commentEntity)
                 .where(postEntity.id.eq(id)
                     .and(postEntity.deleted.eq(false))
-                    .and(commentEntity.deleted.eq(false).or(commentEntity.deleted.isNull()))
                 )
                 .distinct()
                 .fetchOne()
@@ -132,7 +181,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
                         .from(userEntity)
                         .join(userEntity.bookmarks, bookmark)
                         .where(userEntity.id.eq(userId)
-                    )
+                        )
                 )
             )
             .fetch();
@@ -154,6 +203,18 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             }
         }
         return builder.and(postEntity.deleted.eq(false));
+    }
+
+    private OrderSpecifier<?>[] getOrderBySpecifiers(QPostEntity postEntity, Pageable pageable) {
+        return pageable.getSort().stream()
+            .map(order -> {
+                PathBuilder<?> pathBuilder = new PathBuilder<>(postEntity.getType(), postEntity.getMetadata());
+                return new OrderSpecifier(
+                    order.isAscending() ? Order.ASC : Order.DESC,
+                    pathBuilder.get(order.getProperty())
+                );
+            })
+            .toArray(OrderSpecifier[]::new);
     }
 
 }

@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table(name = "post")
+@Table(name = "posts")
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -53,7 +53,7 @@ public class PostEntity extends BaseEntity {
     private PostCategory category;
 
     @Column(nullable = false, length = 20)
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private PostStatus status;
 
     private LocalDateTime expiredDate;

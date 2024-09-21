@@ -9,6 +9,8 @@ import java.lang.annotation.RetentionPolicy;
 @WithSecurityContext(factory = WithMockJwtAuthenticationSecurityContextFactory.class)
 public @interface WithMockJwtAuthentication {
 
+    long id() default 9999L;
+
     String token() default "testToken";
 
     String role() default "STAFF";

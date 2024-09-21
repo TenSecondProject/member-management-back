@@ -12,6 +12,7 @@ import org.colcum.admin.domain.user.domain.vo.Bookmark;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -25,9 +26,10 @@ public class PostDetailResponseDto {
     private PostStatus status;
     private boolean isBookmarked;
 
-    @JsonFormat(pattern = "yy/MM/dd HH:mm", timezone = "Asia/Seoul")
+    @JsonFormat(pattern = "yyyy.MM.dd HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime expiredDate;
-    private String writtenBy;
+    private Long userId;
+    private String username;
 
     @JsonFormat(pattern = "yyyy.MM.dd HH:mm", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
@@ -42,7 +44,8 @@ public class PostDetailResponseDto {
         PostStatus status,
         boolean isBookmarked,
         LocalDateTime expiredDate,
-        String writtenBy,
+        Long userId,
+        String username,
         LocalDateTime createdAt,
         List<CommentResponseDto> commentResponseDtos,
         List<EmojiResponseDto> emojiResponseDtos
@@ -55,7 +58,8 @@ public class PostDetailResponseDto {
             status,
             isBookmarked,
             expiredDate,
-            writtenBy,
+            userId,
+            username,
             createdAt,
             commentResponseDtos,
             emojiResponseDtos
@@ -71,10 +75,11 @@ public class PostDetailResponseDto {
             post.getStatus(),
             post.getUser().getBookmarks().contains(new Bookmark(post.getId())),
             post.getExpiredDate(),
+            post.getUser().getId(),
             post.getUser().getName(),
             post.getCreatedAt(),
-            post.getCommentEntities().stream().map(CommentResponseDto::from).toList(),
-            EmojiResponseDto.from(post.getEmojiReactionEntities())
+            post.getCommentEntities().stream().filter(c -> !c.isDeleted()).map(CommentResponseDto::from).toList(),
+            EmojiResponseDto.from(post.getEmojiReactionEntities().stream().filter(e -> !e.isDeleted()).collect(Collectors.toList()))
         );
     }
 
