@@ -14,19 +14,21 @@ import java.time.LocalDate;
 public class CommentResponseDto {
 
     private Long id;
-    private String writtenBy;
+    private Long userId;
+    private String username;
 
-    @JsonFormat(pattern = "yy/MM/dd", timezone = "Asia/Seoul")
+    @JsonFormat(pattern = "MM/dd", timezone = "Asia/Seoul")
     private LocalDate writtenDate;
     private String content;
 
-    public static CommentResponseDto of(Long id, String writtenBy, LocalDate writtenDate, String content) {
-        return new CommentResponseDto(id, writtenBy, writtenDate, content);
+    public static CommentResponseDto of(Long id, Long userId, String username, LocalDate writtenDate, String content) {
+        return new CommentResponseDto(id, userId, username, writtenDate, content);
     }
 
     public static CommentResponseDto from(CommentEntity comment) {
         return new CommentResponseDto(
             comment.getId(),
+            comment.getUser().getId(),
             comment.getUser().getName(),
             comment.getCreatedAt().toLocalDate(),
             comment.getContent()

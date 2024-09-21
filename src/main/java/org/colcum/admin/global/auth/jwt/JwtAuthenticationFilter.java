@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.auth.application.UserAuthenticationService;
 import org.colcum.admin.global.common.api.dto.ApiResponse;
+import org.colcum.admin.global.common.application.RedisUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -67,7 +68,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 } catch (TokenExpiredException e) {
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                     response.setCharacterEncoding("UTF-8");
-                    response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<Void>(HttpStatus.FORBIDDEN.value(), e.getMessage(), null)));
+                    response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+                    response.setHeader("Access-Control-Allow-Credentials", "true");
+                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<Void>(HttpStatus.UNAUTHORIZED.value(), e.getMessage(), null)));
+                    return;
                 } catch (Exception e) {
                     log.error("Jwt processing failed: {}", e.getMessage());
                 }

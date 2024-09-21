@@ -18,7 +18,7 @@ spring:
     open-in-view: false
     properties:
       hibernate:
-        default_batch_fetch_size: 1000
+        default_batch_fetch_size: 3
 
 server:
   port: 8080
@@ -41,7 +41,10 @@ logging:
 jwt:
   issuer: 10Second
   client-secret: ${JWT_SECRET}
-  expiry-seconds: 316000
+  expiry-seconds: 3160000
+
+cors:
+  origin: ${CORS_ORIGIN}
 
 ---
 spring:
@@ -55,7 +58,6 @@ spring:
     redis:
       port: 6379
       host: ${REDIS_HOST}
-      password: ${REDIS_PASSWORD}
 
   jpa:
     hibernate:

@@ -81,7 +81,7 @@ class PostRepositoryTest {
         );
 
         // when
-        Page<PostResponseDto> posts = postRepository.search(condition, PageRequest.of(0, 10));
+        Page<PostResponseDto> posts = postRepository.search(condition, user, PageRequest.of(0, 10));
 
         // then
         assertThat(posts.getContent().size()).isEqualTo(3);

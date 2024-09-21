@@ -13,7 +13,9 @@ import java.util.Optional;
 
 public interface CustomPostRepository {
 
-    Page<PostResponseDto> search(PostSearchCondition condition, Pageable pageable);
+    Page<PostResponseDto> search(PostSearchCondition condition, UserEntity user, Pageable pageable);
+
+    Page<PostResponseDto> searchWithBookmarkedPost(PostSearchCondition condition, UserEntity user, Pageable pageable);
 
     Page<PostResponseDto> searchReceivedPost(PostSearchCondition postSearchCondition, UserEntity receivedUser, Pageable pageable);
 

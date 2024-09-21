@@ -45,13 +45,13 @@ public class AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccess
 
     public static Map<String, Object> getTokenMap(String accessToken, RefreshToken refreshToken) {
         Map<String, Object> tokens = new HashMap<>();
-        tokens.put("access_token", accessToken);
-        tokens.put("refresh_token", refreshToken);
+        tokens.put("accessToken", accessToken);
+        tokens.put("refreshToken", refreshToken);
         return tokens;
     }
 
     private String generateToken(UserEntity user) {
-        return jwt.sign(Jwt.Claims.of(user.getId(), new String[]{user.getUserType().getRole()}));
+        return jwt.sign(Jwt.Claims.of(user.getId(), user.getName(), new String[]{user.getUserType().getRole()}));
     }
 
 }

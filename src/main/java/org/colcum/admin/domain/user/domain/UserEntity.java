@@ -6,6 +6,7 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -53,7 +54,7 @@ public class UserEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserType userType = UserType.STAFF;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "bookmarks", joinColumns = @JoinColumn(name = "user_id"))
     private Set<Bookmark> bookmarks = new HashSet<>();
 

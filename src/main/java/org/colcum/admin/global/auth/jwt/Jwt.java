@@ -39,6 +39,7 @@ public class Jwt {
             builder.withExpiresAt(new Date(now.getTime() + expirySeconds));
         }
         builder.withClaim("userId", claims.userId);
+        builder.withClaim("username", claims.username);
         builder.withArrayClaim("roles", claims.roles);
         return builder.sign(algorithm);
     }
@@ -50,6 +51,8 @@ public class Jwt {
     static public class Claims {
 
         Long userId;
+
+        String username;
 
         String[] roles;
 
@@ -74,9 +77,10 @@ public class Jwt {
             this.exp = decodedJWT.getExpiresAt();
         }
 
-        public static Claims of(Long userId, String[] roles) {
+        public static Claims of(Long userId, String username, String[] roles) {
             Claims claims = new Claims();
             claims.userId = userId;
+            claims.username = username;
             claims.roles = roles;
             return claims;
         }

@@ -104,7 +104,7 @@ class PostServiceTest {
         PageRequest pageRequest = PageRequest.ofSize(10);
 
         // when
-        Page<PostResponseDto> posts = postService.findByCriteria(searchType, searchValue, categories, status, pageRequest);
+        Page<PostResponseDto> posts = postService.findByCriteria(searchType, searchValue, categories, status, user, pageRequest);
 
         // then
         assertThat(posts.getContent().size()).isEqualTo(3);
@@ -129,8 +129,8 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> nothing = postService.findByCriteria(null, null, null, searchStandardForNothing, page);
-        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, null, searchStandardForAllPosts, page);
+        Page<PostResponseDto> nothing = postService.findByCriteria(null, null, null, searchStandardForNothing, user, page);
+        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, null, searchStandardForAllPosts, user, page);
 
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
@@ -154,7 +154,7 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, null, statuses, page);
+        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, null, statuses, user, page);
 
         // then
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
@@ -178,8 +178,8 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> nothing = postService.findByCriteria(null, null, searchStandardForNothing, null, page);
-        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, searchStandardForAllPosts, null, page);
+        Page<PostResponseDto> nothing = postService.findByCriteria(null, null, searchStandardForNothing, null, user, page);
+        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, searchStandardForAllPosts, null, user, page);
 
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
@@ -203,7 +203,7 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, categories, null, page);
+        Page<PostResponseDto> allPosts = postService.findByCriteria(null, null, categories, null, user, page);
 
         // then
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
@@ -228,8 +228,8 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, page);
-        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, page);
+        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, user, page);
+        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, user, page);
 
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
@@ -255,8 +255,8 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, page);
-        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, page);
+        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, user, page);
+        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, user, page);
 
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
@@ -282,8 +282,8 @@ class PostServiceTest {
         PageRequest page = PageRequest.of(0, 10);
 
         // when
-        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, page);
-        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, page);
+        Page<PostResponseDto> nothing = postService.findByCriteria(searchType, searchValueForNothing, null, null, user, page);
+        Page<PostResponseDto> allPosts = postService.findByCriteria(searchType, searchValueForAll, null, null, user, page);
 
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
@@ -308,7 +308,8 @@ class PostServiceTest {
         assertThat(post.getCategory()).isEqualTo(response.getCategory());
         assertThat(post.getStatus()).isEqualTo(response.getStatus());
         assertThat(post.getExpiredDate()).isEqualTo(response.getExpiredDate());
-        assertThat(post.getUser().getName()).isEqualTo(response.getWrittenBy());
+        assertThat(post.getUser().getId()).isEqualTo(response.getUserId());
+        assertThat(post.getUser().getName()).isEqualTo(response.getUsername());
         assertThat(post.getCommentEntities().stream().map(CommentResponseDto::from).toList()).isEqualTo(response.getCommentResponseDtos());
         assertThat(EmojiResponseDto.from(post.getEmojiReactionEntities())).isEqualTo(response.getEmojiResponseDtos());
     }
@@ -477,15 +478,14 @@ class PostServiceTest {
         CommentEntity comment2 = new CommentEntity("comment2", user, post);
         CommentEntity comment3 = new CommentEntity("comment3", user, post);
 
-        comment3.delete();
 
-        post.addComment(comment1);
-        post.addComment(comment2);
-        post.addComment(comment3);
         post = postRepository.save(post);
         comment1 = commentRepository.save(comment1);
         comment2 = commentRepository.save(comment2);
         comment3 = commentRepository.save(comment3);
+
+        comment3.delete();
+        commentRepository.save(comment3);
 
         // when
         PostDetailResponseDto response = postService.inquirePostDetail(post.getId());

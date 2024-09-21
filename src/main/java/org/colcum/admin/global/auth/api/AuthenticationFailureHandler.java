@@ -22,7 +22,8 @@ public class AuthenticationFailureHandler extends SimpleUrlAuthenticationFailure
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json;charset=UTF-8");
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
         response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<Void>(HttpStatus.UNAUTHORIZED.value(), exception.getMessage(), null)));;
     }
 

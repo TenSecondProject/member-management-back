@@ -37,6 +37,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.text.MessageFormat;
@@ -88,6 +89,7 @@ class PostControllerTest extends AbstractRestDocsTest {
                 "content",
                 PostStatus.IN_PROGRESS,
                 "tester",
+                LocalDateTime.now(),
                 false,
                 3,
                 List.of(EmojiResponseDto.of("\uD83D\uDE00", 1, List.of("tester2")))
@@ -103,6 +105,7 @@ class PostControllerTest extends AbstractRestDocsTest {
                 argThat(new IsNullOrType<>(String.class)),
                 argThat(new IsNullOrType<>(List.class)),
                 argThat(new IsNullOrType<>(List.class)),
+                argThat(new IsNullOrType<>(UserEntity.class)),
                 argThat(new IsNullOrType<>(Pageable.class))
             )
         ).thenReturn(page);
@@ -146,6 +149,7 @@ class PostControllerTest extends AbstractRestDocsTest {
                 "content",
                 PostStatus.IN_PROGRESS,
                 "tester",
+                LocalDateTime.now(),
                 false,
                 3,
                 List.of(EmojiResponseDto.of("\uD83D\uDE00", 1, List.of("tester2")))
@@ -161,6 +165,7 @@ class PostControllerTest extends AbstractRestDocsTest {
                 argThat(new IsNullOrType<>(String.class)),
                 argThat(new IsNullOrType<>(List.class)),
                 argThat(new IsNullOrType<>(List.class)),
+                argThat(new IsNullOrType<>(UserEntity.class)),
                 argThat(new IsNullOrType<>(Pageable.class))
             )
         ).thenReturn(page);
@@ -228,6 +233,9 @@ class PostControllerTest extends AbstractRestDocsTest {
         Long postId = 1L;
         LocalDateTime now = LocalDateTime.now();
         // given
+        JwtAuthentication principal = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long userId = principal.userEntity.getId();
+
         PostDetailResponseDto dtos = PostDetailResponseDto.of(
             postId,
             "title",
@@ -236,9 +244,10 @@ class PostControllerTest extends AbstractRestDocsTest {
             PostStatus.COMPLETE,
             false,
             now,
+            userId,
             "tester",
             now,
-            List.of(CommentResponseDto.of(1L, "commentTester", now.toLocalDate(), "commentContent")),
+            List.of(CommentResponseDto.of(1L, userId,"commentTester", now.toLocalDate(), "commentContent")),
             List.of(EmojiResponseDto.of("\uD83D\uDE00", 1, List.of("tester2")))
         );
 
@@ -258,11 +267,13 @@ class PostControllerTest extends AbstractRestDocsTest {
                 jsonPath("$.data.category").value(PostCategory.ANNOUNCEMENT.name()),
                 jsonPath("$.data.status").value(PostStatus.COMPLETE.name()),
                 jsonPath("$.data.bookmarked").value(false),
-                jsonPath("$.data.expiredDate").value(now.format(DateTimeFormatter.ofPattern("yy/MM/dd HH:mm"))),
-                jsonPath("$.data.writtenBy").value("tester"),
+                jsonPath("$.data.expiredDate").value(now.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"))),
+                jsonPath("$.data.userId").value(userId),
+                jsonPath("$.data.username").value("tester"),
                 jsonPath("$.data.createdAt").value(now.format(DateTimeFormatter.ofPattern("yyyy.MM.dd HH:mm"))),
-                jsonPath("$.data.commentResponseDtos[0].writtenBy").value("commentTester"),
-                jsonPath("$.data.commentResponseDtos[0].writtenDate").value(now.format(DateTimeFormatter.ofPattern("yy/MM/dd"))),
+                jsonPath("$.data.commentResponseDtos[0].userId").value(userId),
+                jsonPath("$.data.commentResponseDtos[0].username").value("commentTester"),
+                jsonPath("$.data.commentResponseDtos[0].writtenDate").value(now.format(DateTimeFormatter.ofPattern("MM/dd"))),
                 jsonPath("$.data.commentResponseDtos[0].content").value("commentContent"),
                 jsonPath("$.data.emojiResponseDtos[0].emoji").value("\uD83D\uDE00"),
                 jsonPath("$.data.emojiResponseDtos[0].totalCount").value(1),
@@ -405,7 +416,7 @@ class PostControllerTest extends AbstractRestDocsTest {
         // then
         this.mockMvc
             .perform(
-                get("/api/v1/posts/bookmarks"))
+                get("/api/v1/posts/bookmarks/summary"))
             .andExpectAll(
                 status().isOk(),
                 jsonPath("$.statusCode").value(HttpStatus.OK.value()),

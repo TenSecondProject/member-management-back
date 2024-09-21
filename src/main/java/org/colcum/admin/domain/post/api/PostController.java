@@ -1,6 +1,7 @@
 package org.colcum.admin.domain.post.api;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
@@ -38,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/posts")
 @RequiredArgsConstructor
@@ -61,7 +63,7 @@ public class PostController {
         if (Objects.nonNull(categories) && categories.contains(PostCategory.DELIVERY)) {
             throw new IllegalArgumentException("공지사항에는 Direct Post가 조회되지 않습니다.");
         }
-        Page<PostResponseDto> responses = postService.findByCriteria(searchType, searchValue, categories, statuses, pageable);
+        Page<PostResponseDto> responses = postService.findByCriteria(searchType, searchValue, categories, statuses, authentication.userEntity, pageable);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
     }
 
@@ -74,6 +76,7 @@ public class PostController {
         if (Objects.isNull(authentication)) {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
+        log.info("Post is inquired, Post Id : {}, User Id: {}", postId, authentication.userEntity.getId());
         PostDetailResponseDto response = postService.inquirePostDetail(postId);
 
         return new ApiResponse<>(HttpStatus.OK.value(), "success", response);
@@ -88,6 +91,7 @@ public class PostController {
         if (Objects.isNull(authentication)) {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
+        log.info("Post create request, User Id: {}", authentication.userEntity.getId());
         postService.createPost(dto, authentication.userEntity);
         return new ApiResponse<>(HttpStatus.CREATED.value(), "created", null);
     }
@@ -102,6 +106,7 @@ public class PostController {
         if (Objects.isNull(authentication)) {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
+        log.info("Post update request, Post Id : {}, User Id: {}", postId, authentication.userEntity.getId());
         PostUpdateDto response = postService.updatePost(postId, dto, authentication.userEntity);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", response);
     }
@@ -119,15 +124,42 @@ public class PostController {
         return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
     }
 
-    @GetMapping("/bookmarks")
+    @GetMapping("/bookmarks/summary")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<List<PostBookmarkedResponse>> inquirePostsWithBookmarked(
+    public ApiResponse<List<PostBookmarkedResponse>> inquirePostSummaryWithBookmarked(
         @AuthenticationPrincipal JwtAuthentication authentication
     ) {
         if (Objects.isNull(authentication)) {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
         List<PostBookmarkedResponse> responses = postService.findBookmarkedPosts(authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
+    }
+
+    @GetMapping("/bookmarks")
+    @ResponseStatus(value = HttpStatus.OK)
+    public ApiResponse<Page<PostResponseDto>> inquirePostsWithBookmarked(
+        @RequestParam(name = "searchType",  required = false) SearchType searchType,
+        @RequestParam(name = "searchValue", required = false) String searchValue,
+        @RequestParam(name = "category",    required = false) List<PostCategory> categories,
+        @RequestParam(name = "status",      required = false) List<PostStatus> statuses,
+        @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        if (Objects.nonNull(categories) && categories.contains(PostCategory.DELIVERY)) {
+            throw new IllegalArgumentException("공지사항에는 Direct Post가 조회되지 않습니다.");
+        }
+        Page<PostResponseDto> responses = postService.findByCriteriaWithBookmarked(
+            searchType,
+            searchValue,
+            categories,
+            statuses,
+            authentication.userEntity,
+            pageable
+        );
         return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
     }
 
@@ -138,6 +170,7 @@ public class PostController {
         @AuthenticationPrincipal JwtAuthentication authentication
     ) {
         if (Objects.isNull(authentication)) {
+            log.info("[Authentication Error]");
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
         postService.addBookmark(postId, authentication.userEntity);
@@ -151,6 +184,7 @@ public class PostController {
         @AuthenticationPrincipal JwtAuthentication authentication
     ) {
         if (Objects.isNull(authentication)) {
+            log.info("[Authentication Error]");
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
         postService.removeBookmark(postId, authentication.userEntity);
@@ -242,7 +276,7 @@ public class PostController {
         return new ApiResponse<>(HttpStatus.CREATED.value(), "created", emojiReactionId);
     }
 
-    @DeleteMapping("/{postId}/emojis")
+    @PutMapping("/{postId}/emojis")
     @ResponseStatus(value = HttpStatus.OK)
     public ApiResponse<Void>  removeEmojiOnPost(
         @PathVariable(name = "postId") Long postId,

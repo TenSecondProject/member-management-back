@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.global.common.domain.BaseEntity;
+import org.hibernate.mapping.ToOne;
 
 @Entity
 @Table(name = "direct_post")
@@ -29,7 +30,7 @@ public class DirectPost extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "post_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private PostEntity postEntity;
 
@@ -37,7 +38,7 @@ public class DirectPost extends BaseEntity {
     @JoinColumn(name = "receiver_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private UserEntity receiver;
 
-    @Column(name = "is_raed")
+    @Column(name = "is_read")
     private boolean isRead = false;
 
     public DirectPost(PostEntity postEntity, UserEntity receiver) {
