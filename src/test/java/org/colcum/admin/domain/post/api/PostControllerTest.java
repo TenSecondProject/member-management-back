@@ -683,7 +683,7 @@ class PostControllerTest extends AbstractRestDocsTest {
         // then
         this.mockMvc
             .perform(
-                delete(MessageFormat.format("/api/v1/posts/{0}/emojis", postId))
+                put(MessageFormat.format("/api/v1/posts/{0}/emojis", postId))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(dto)))
             .andExpectAll(
