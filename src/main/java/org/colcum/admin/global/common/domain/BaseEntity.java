@@ -40,7 +40,7 @@ public abstract class BaseEntity {
     @Column(nullable = false)
     private String modifiedBy;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TINYINT(1) DEFAULT 0")
     private boolean deleted = false;
 
     @PrePersist
