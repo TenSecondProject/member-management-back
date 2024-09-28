@@ -344,7 +344,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("송신된 게시글의 상세페이지를 조회한다.")
-    void inquirePostDetail() {
+    void inquireSentPostDetail() {
         // given
         PostEntity post = Fixture.createFixturePost("title1", "content1", user);
         post = postRepository.save(post);
