@@ -63,11 +63,11 @@ public class PostEntity extends BaseEntity {
     @ToString.Exclude
     private UserEntity user;
 
-    @OneToMany(mappedBy = "postEntity")
+    @OneToMany(mappedBy = "postEntity", fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<CommentEntity> commentEntities = new ArrayList<>();
 
-    @OneToMany(mappedBy = "postEntity")
+    @OneToMany(mappedBy = "postEntity", fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<EmojiReactionEntity> emojiReactionEntities = new ArrayList<>();
 

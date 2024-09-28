@@ -13,10 +13,11 @@ import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
+import org.colcum.admin.domain.post.api.dto.SentPostResponseDto;
 import org.colcum.admin.domain.post.dao.CommentRepository;
+import org.colcum.admin.domain.post.dao.DirectPostRepository;
 import org.colcum.admin.domain.post.dao.EmojiReactionRepository;
 import org.colcum.admin.domain.post.dao.PostRepository;
-import org.colcum.admin.domain.post.dao.DirectPostRepository;
 import org.colcum.admin.domain.post.domain.CommentEntity;
 import org.colcum.admin.domain.post.domain.DirectPost;
 import org.colcum.admin.domain.post.domain.EmojiReactionEntity;
@@ -129,6 +130,21 @@ public class PostService {
         );
     }
 
+    @Transactional(readOnly = true)
+    public Page<PostResponseDto> findSentPost(
+        SearchType searchType,
+        String searchValue,
+        List<PostStatus> statuses,
+        UserEntity sender,
+        Pageable pageable
+    ) {
+        return postRepository.findSentPostByUserId(
+            new PostSearchCondition(searchType, searchValue, List.of(PostCategory.DELIVERY), statuses),
+            sender,
+            pageable
+        );
+    }
+
 
     @Transactional
     public void addBookmark(Long postId, UserEntity user) {
@@ -218,7 +234,7 @@ public class PostService {
     private void createDirectedPosts(PostCreateDto dto, PostEntity post, UserEntity user) {
         for (Long targetUserId : dto.getSendTargetUserIds()) {
             UserEntity TargetUser = userRepository.findById(targetUserId).orElseThrow(() -> {
-                    throw new UsernameNotFoundException("대상 유저는 존재하지 않습니다.");
+                throw new UsernameNotFoundException("대상 유저는 존재하지 않습니다.");
             });
             DirectPost directPost = new DirectPost(post, TargetUser);
             directedPostRepository.save(directPost);

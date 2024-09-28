@@ -3,6 +3,7 @@ package org.colcum.admin.domain.post.dao;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
+import org.colcum.admin.domain.post.api.dto.SentPostResponseDto;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.springframework.data.domain.Page;
@@ -19,7 +20,9 @@ public interface CustomPostRepository {
 
     Page<PostResponseDto> searchReceivedPost(PostSearchCondition postSearchCondition, UserEntity receivedUser, Pageable pageable);
 
-    Optional<PostEntity> findByIdWithUser(Long userId);
+    Page<PostResponseDto> findSentPostByUserId(PostSearchCondition postSearchCondition, UserEntity user, Pageable pageable);
+
+    Optional<PostEntity> findByIdWithUser(Long postId);
 
     Optional<PostEntity> findByIdAndDeletedIsFalse(Long id);
 
