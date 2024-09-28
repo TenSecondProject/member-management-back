@@ -1,26 +1,34 @@
 package org.colcum.admin.domain.post.dao;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.colcum.admin.domain.post.api.dto.CommentResponseDto;
+import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
+import org.colcum.admin.domain.post.api.dto.SentPostResponseDto;
 import org.colcum.admin.domain.post.domain.PostEntity;
 import org.colcum.admin.domain.post.domain.QPostEntity;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.user.domain.UserEntity;
+import org.colcum.admin.domain.user.domain.vo.Bookmark;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -50,17 +58,17 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             .where(builder
                 .and(
                     postEntity.category.eq(PostCategory.ANNOUNCEMENT)
-                    .or(
-                        postEntity.category.eq(PostCategory.DELIVERY)
-                        .and(
-                            JPAExpressions
-                                .selectOne()
-                                .from(directPost)
-                                .where(directPost.receiver.eq(receivedUser)
-                                    .and(directPost.postEntity.eq(postEntity))) // postEntity와 관련된 조건 추가
-                                .exists()
+                        .or(
+                            postEntity.category.eq(PostCategory.DELIVERY)
+                                .and(
+                                    JPAExpressions
+                                        .selectOne()
+                                        .from(directPost)
+                                        .where(directPost.receiver.eq(receivedUser)
+                                            .and(directPost.postEntity.eq(postEntity))) // postEntity와 관련된 조건 추가
+                                        .exists()
+                                )
                         )
-                    )
                 )
             )
             .offset(pageable.getOffset())
@@ -98,6 +106,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             )
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
+            .orderBy(this.getOrderBySpecifiers(postEntity, pageable))
             .fetch();
 
         List<PostResponseDto> dtos = fetch.stream()
@@ -120,11 +129,45 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             .from(directPost)
             .innerJoin(directPost.postEntity, postEntity)
             .innerJoin(postEntity.user, userEntity)
+            .leftJoin(userEntity.bookmarks, bookmark)
             .leftJoin(postEntity.commentEntities, commentEntity)
-            .leftJoin(postEntity.emojiReactionEntities, emojiReactionEntity).fetchJoin()
+            .leftJoin(postEntity.emojiReactionEntities, emojiReactionEntity)
             .where(builder.and(directPost.receiver.id.eq(receivedUser.getId())))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
+            .orderBy(this.getOrderBySpecifiers(postEntity, pageable))
+            .fetch();
+
+        List<PostResponseDto> dtos = fetch.stream()
+            .map(PostResponseDto::from)
+            .toList();
+
+        JPAQuery<Long> count = queryFactory
+            .select(postEntity.count())
+            .from(postEntity)
+            .where(builder);
+
+        return PageableExecutionUtils.getPage(dtos, pageable, count::fetchCount);
+    }
+
+    @Override
+    public Page<PostResponseDto> findSentPostByUserId(PostSearchCondition condition, UserEntity user, Pageable pageable) {
+        BooleanBuilder builder = getPostBooleanBuilder(condition);
+        List<PostEntity> fetch = queryFactory
+            .select(postEntity).distinct()
+            .from(postEntity)
+            .innerJoin(postEntity.user, userEntity)
+            .leftJoin(postEntity.commentEntities, commentEntity)
+            .leftJoin(postEntity.emojiReactionEntities, emojiReactionEntity)
+            .leftJoin(userEntity.bookmarks, bookmark)
+            .where(
+                builder
+                    .and(postEntity.user.id.eq(user.getId()))
+                    .and(postEntity.category.eq(PostCategory.DELIVERY))
+            )
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
+            .orderBy(this.getOrderBySpecifiers(postEntity, pageable))
             .fetch();
 
         List<PostResponseDto> dtos = fetch.stream()
@@ -143,7 +186,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
     public Optional<PostEntity> findByIdWithUser(Long id) {
         return Optional.ofNullable(queryFactory
             .selectFrom(postEntity)
-            .innerJoin(postEntity.user, userEntity)
+            .innerJoin(postEntity.user, userEntity).fetchJoin()
             .fetchJoin()
             .where(postEntity.id.eq(id)
                 .and(postEntity.deleted.eq(false))
