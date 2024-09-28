@@ -343,6 +343,30 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("송신된 게시글의 상세페이지를 조회한다.")
+    void inquirePostDetail() {
+        // given
+        PostEntity post = Fixture.createFixturePost("title1", "content1", user);
+        post = postRepository.save(post);
+
+        // when
+        PostDetailResponseDto response = postService.inquirePostDetail(post.getId());
+
+        // then
+        assertThat(post.getId()).isEqualTo(response.getId());
+        assertThat(post.getTitle()).isEqualTo(response.getTitle());
+        assertThat(post.getContent()).isEqualTo(response.getContent());
+        assertThat(post.getCategory()).isEqualTo(response.getCategory());
+        assertThat(post.getStatus()).isEqualTo(response.getStatus());
+        assertThat(post.getExpiredDate()).isEqualTo(response.getExpiredDate());
+        assertThat(post.getUser().getId()).isEqualTo(response.getUserId());
+        assertThat(post.getUser().getName()).isEqualTo(response.getUsername());
+        assertThat(post.getCommentEntities().stream().map(CommentResponseDto::from).toList()).isEqualTo(response.getCommentResponseDtos());
+        assertThat(EmojiResponseDto.from(post.getEmojiReactionEntities())).isEqualTo(response.getEmojiResponseDtos());
+    }
+
+
+    @Test
     @DisplayName("게시글을 생성한다.")
     void createPost() {
         // given

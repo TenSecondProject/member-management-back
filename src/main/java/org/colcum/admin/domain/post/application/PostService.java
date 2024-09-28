@@ -13,6 +13,7 @@ import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
+import org.colcum.admin.domain.post.api.dto.SentPostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.SentPostResponseDto;
 import org.colcum.admin.domain.post.dao.CommentRepository;
 import org.colcum.admin.domain.post.dao.DirectPostRepository;
@@ -40,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -71,6 +73,19 @@ public class PostService {
             .orElseThrow(() -> new PostNotFoundException("대상 게시글은 존재하지 않습니다."));
 
         return PostDetailResponseDto.from(post);
+    }
+
+    @Transactional(readOnly = true)
+    public SentPostDetailResponseDto inquireSentPostDetail(Long id) {
+        PostEntity post = postRepository.findByIdAndDeletedIsFalse(id)
+            .orElseThrow(() -> new PostNotFoundException("대상 게시글은 존재하지 않습니다."));
+
+        List<String> receiversName = directedPostRepository.findByPostEntity_IdAndDeletedIsFalse(id).stream()
+            .map(d -> d.getReceiver().getName()).toList();
+
+        SentPostDetailResponseDto dto = SentPostDetailResponseDto.from(post);
+        dto.setReceiversName(receiversName);
+        return dto;
     }
 
     @Transactional
