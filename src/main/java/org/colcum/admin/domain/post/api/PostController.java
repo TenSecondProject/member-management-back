@@ -12,6 +12,7 @@ import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
+import org.colcum.admin.domain.post.api.dto.SentPostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.SentPostResponseDto;
 import org.colcum.admin.domain.post.application.PostService;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
@@ -79,6 +80,21 @@ public class PostController {
         }
         log.info("Post is inquired, Post Id : {}, User Id: {}", postId, authentication.userEntity.getId());
         PostDetailResponseDto response = postService.inquirePostDetail(postId);
+
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", response);
+    }
+
+    @GetMapping("/sent/{postId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public ApiResponse<SentPostDetailResponseDto> inquireSentPostDetail(
+        @PathVariable(name = "postId", required = true) Long postId,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        log.info("Post is inquired, Post Id : {}, User Id: {}", postId, authentication.userEntity.getId());
+        SentPostDetailResponseDto response = postService.inquireSentPostDetail(postId);
 
         return new ApiResponse<>(HttpStatus.OK.value(), "success", response);
     }
