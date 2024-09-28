@@ -12,6 +12,7 @@ import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
+import org.colcum.admin.domain.post.api.dto.SentPostResponseDto;
 import org.colcum.admin.domain.post.dao.CommentRepository;
 import org.colcum.admin.domain.post.dao.EmojiReactionRepository;
 import org.colcum.admin.domain.post.dao.PostRepository;
@@ -25,6 +26,7 @@ import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.domain.user.dao.UserRepository;
 import org.colcum.admin.domain.user.domain.UserEntity;
+import org.colcum.admin.domain.user.domain.type.Branch;
 import org.colcum.admin.domain.user.domain.vo.Bookmark;
 import org.colcum.admin.global.exception.CommentNotFoundException;
 import org.colcum.admin.global.exception.PostNotFoundException;
@@ -47,6 +49,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.colcum.admin.global.util.Fixture.createFixtureComment;
+import static org.colcum.admin.global.util.Fixture.createFixtureDeliveryPost;
 import static org.colcum.admin.global.util.Fixture.createFixtureDirectedPost;
 import static org.colcum.admin.global.util.Fixture.createFixturePost;
 import static org.colcum.admin.global.util.Fixture.createFixtureUser;
@@ -291,6 +294,30 @@ class PostServiceTest {
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
         assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1), PostResponseDto.from(post2), PostResponseDto.from(post3));
     }
+
+    @Test
+    @DisplayName("특정 유저가 송신한 게시물을 조회한다.")
+    void inquireSentPost() {
+        // given
+        PostEntity post = createFixtureDeliveryPost("title", "content", user);
+        UserEntity receiver = createFixtureUser("receiver@gmail.com", "1234", "receiver", Branch.JONGRO);
+        DirectPost directPost = new DirectPost(post, receiver);
+
+        userRepository.save(user);
+        userRepository.save(receiver);
+        postRepository.save(post);
+        directedPostRepository.save(directPost);
+
+        SearchType searchType = SearchType.TITLE;
+        PageRequest page = PageRequest.of(0, 10);
+
+        // when
+        Page<PostResponseDto> response =  postService.findSentPost(searchType, "", null, user, page);
+
+        // then
+        assertThat(response.getContent().size()).isEqualTo(1);
+    }
+
 
     @Test
     @DisplayName("게시글 상세페이지를 조회한다.")

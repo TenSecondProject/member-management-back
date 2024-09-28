@@ -18,6 +18,10 @@ public class Fixture {
         return createFixturePost(title, content, PostCategory.ANNOUNCEMENT, PostStatus.UNCOMPLETED, null, user, new ArrayList<>(), new ArrayList<>());
     }
 
+    public static PostEntity createFixtureDeliveryPost(String title, String content, UserEntity user) {
+        return createFixturePost(title, content, PostCategory.DELIVERY, PostStatus.UNCOMPLETED, null, user, new ArrayList<>(), new ArrayList<>());
+    }
+
     public static PostEntity createFixturePost(String title, String content, PostCategory postCategory, PostStatus postStatus, LocalDateTime expiredDate, UserEntity user, List<CommentEntity> comments, List<EmojiReactionEntity> emojis) {
         return new PostEntity(title, content, postCategory, postStatus, expiredDate, user, comments, emojis);
     }
@@ -28,6 +32,10 @@ public class Fixture {
 
     public static UserEntity createFixtureUser() {
         return new UserEntity("test@gmail.com", "1234", "tester", Branch.JONGRO);
+    }
+
+    public static UserEntity createFixtureUser(String email, String password, String username, Branch branch) {
+        return new UserEntity(email, password, username, branch);
     }
 
     public static CommentEntity createFixtureComment(UserEntity user, PostEntity post, String content) {

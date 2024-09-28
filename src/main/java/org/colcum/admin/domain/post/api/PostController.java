@@ -12,6 +12,7 @@ import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
+import org.colcum.admin.domain.post.api.dto.SentPostResponseDto;
 import org.colcum.admin.domain.post.application.PostService;
 import org.colcum.admin.domain.post.domain.type.PostCategory;
 import org.colcum.admin.domain.post.domain.type.PostStatus;
@@ -259,6 +260,22 @@ public class PostController {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
         Page<PostResponseDto> responses = postService.findReceivedPosts(searchType, searchValue, statuses, authentication.userEntity, pageable);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
+    }
+
+    @GetMapping("/sent")
+    @ResponseStatus(value = HttpStatus.OK)
+    public ApiResponse<Page<PostResponseDto>> inquireSentPosts(
+        @RequestParam(name = "searchType",  required = false) SearchType searchType,
+        @RequestParam(name = "searchValue", required = false) String searchValue,
+        @RequestParam(name = "status",      required = false) List<PostStatus> statuses,
+        @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        Page<PostResponseDto> responses = postService.findSentPost(searchType, searchValue, statuses, authentication.userEntity, pageable);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
     }
 
