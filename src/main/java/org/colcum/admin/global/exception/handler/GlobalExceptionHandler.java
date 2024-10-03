@@ -33,6 +33,12 @@ public class GlobalExceptionHandler {
         return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), null);
     }
 
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(value = IllegalArgumentException.class)
+    public ApiResponse<Void> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), null);
+    }
+
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(value = InvalidAuthenticationException.class)
     public ApiResponse<Void> handleInvalidAuthenticationException(InvalidAuthenticationException ex) {

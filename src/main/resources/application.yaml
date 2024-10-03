@@ -7,7 +7,7 @@ spring:
     include: oauth, aws
 
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE
+    url: jdbc:h2:mem:local;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;DATABASE_TO_LOWER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -53,7 +53,7 @@ spring:
       on-profile: local
   sql:
     init:
-      mode: never
+      mode: always
   data:
     redis:
       port: 6379
@@ -84,8 +84,6 @@ logging:
 cors:
   origin: "http://localhost:5173"
 
-
-
 ---
 spring:
   config:
@@ -106,13 +104,13 @@ spring:
   jpa:
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
     open-in-view: false
     properties:
       hibernate.default_batch_fetch_size: 100
     database: mysql
     database-platform: org.hibernate.dialect.MySQLDialect
-  sql.init.mode: always
+  sql.init.mode: never
 
 server:
   port: ${SERVER_PORT}

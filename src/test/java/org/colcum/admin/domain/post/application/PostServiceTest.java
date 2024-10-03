@@ -6,6 +6,7 @@ import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
 import org.colcum.admin.domain.post.api.dto.EmojiDeleteDto;
 import org.colcum.admin.domain.post.api.dto.EmojiResponseDto;
+import org.colcum.admin.domain.post.api.dto.MainAnnouncementPostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
@@ -27,7 +28,10 @@ import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.domain.user.dao.UserRepository;
 import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.domain.user.domain.type.Branch;
+import org.colcum.admin.domain.user.domain.type.UserType;
 import org.colcum.admin.domain.user.domain.vo.Bookmark;
+import org.colcum.admin.global.common.application.RedisPostService;
+import org.colcum.admin.global.config.RedisTestContainerConfiguration;
 import org.colcum.admin.global.exception.CommentNotFoundException;
 import org.colcum.admin.global.exception.PostNotFoundException;
 import org.colcum.admin.global.util.Fixture;
@@ -35,6 +39,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
@@ -57,10 +62,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 @ActiveProfiles("local")
+@ExtendWith(RedisTestContainerConfiguration.class)
 class PostServiceTest {
 
     @Autowired
     private PostService postService;
+
+    @Autowired
+    private RedisPostService redisPostService;
 
     @Autowired
     private PostRepository postRepository;
@@ -693,5 +702,43 @@ class PostServiceTest {
         EmojiReactionEntity emojiReactionEntity = emojiReactionRepository.findById(emojiId).get();
         assertThat(emojiReactionEntity.isDeleted()).isEqualTo(true);
     }
+
+    @Test
+    @DisplayName("메인 공지사항을 등록한다.")
+    @Transactional
+    void changeMainAnnouncementPost() {
+        // given
+        PostEntity post = createFixturePost("title", "content", user);
+        user.setType(UserType.MANAGER);
+        user = userRepository.save(user);
+        post = postRepository.save(post);
+
+        // when
+        postService.changeMainAnnouncementPost(post.getId(), user);
+
+        // then
+        MainAnnouncementPostResponseDto dto = postService.inquireMainAnnouncementPost();
+        assertThat(dto.getPostId()).isEqualTo(post.getId());
+        assertThat(dto.getTitle()).isEqualTo(post.getTitle());
+        assertThat(dto.getContent()).isEqualTo(post.getContent());
+    }
+
+    @Test
+    @DisplayName("메인 공지사항을 조회한다.")
+    @Transactional
+    void getMainAnnouncementPost() {        // given
+        PostEntity post = createFixturePost("title", "content", user);
+        user.setType(UserType.MANAGER);
+        user = userRepository.save(user);
+        post = postRepository.save(post);
+
+        // when
+        postService.changeMainAnnouncementPost(post.getId(), user);
+
+        // then
+        MainAnnouncementPostResponseDto dto = postService.inquireMainAnnouncementPost();
+        assertThat(dto.getPostId()).isEqualTo(post.getId());
+        assertThat(dto.getTitle()).isEqualTo(post.getTitle());
+        assertThat(dto.getContent()).isEqualTo(post.getContent());}
 
 }
