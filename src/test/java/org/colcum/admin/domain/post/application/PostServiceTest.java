@@ -68,8 +68,8 @@ class PostServiceTest {
     @Autowired
     private PostService postService;
 
-//    @Autowired
-//    private RedisPostService redisPostService;
+    @Autowired
+    private RedisPostService redisPostService;
 
     @Autowired
     private PostRepository postRepository;
@@ -703,43 +703,43 @@ class PostServiceTest {
         assertThat(emojiReactionEntity.isDeleted()).isEqualTo(true);
     }
 
-//    @Test
-//    @DisplayName("메인 공지사항을 등록한다.")
-//    @Transactional
-//    void changeMainAnnouncementPost() {
-//        // given
-//        PostEntity post = createFixturePost("title", "content", user);
-//        user.setType(UserType.MANAGER);
-//        user = userRepository.save(user);
-//        post = postRepository.save(post);
-//
-//        // when
-//        postService.changeMainAnnouncementPost(post.getId(), user);
-//
-//        // then
-//        MainAnnouncementPostResponseDto dto = postService.inquireMainAnnouncementPost();
-//        assertThat(dto.getPostId()).isEqualTo(post.getId());
-//        assertThat(dto.getTitle()).isEqualTo(post.getTitle());
-//        assertThat(dto.getContent()).isEqualTo(post.getContent());
-//    }
+    @Test
+    @DisplayName("메인 공지사항을 등록한다.")
+    @Transactional
+    void changeMainAnnouncementPost() {
+        // given
+        PostEntity post = createFixturePost("title", "content", user);
+        user.setType(UserType.MANAGER);
+        user = userRepository.save(user);
+        post = postRepository.save(post);
 
-//    @Test
-//    @DisplayName("메인 공지사항을 조회한다.")
-//    @Transactional
-//    void getMainAnnouncementPost() {        // given
-//        PostEntity post = createFixturePost("title", "content", user);
-//        user.setType(UserType.MANAGER);
-//        user = userRepository.save(user);
-//        post = postRepository.save(post);
-//
-//        // when
-//        postService.changeMainAnnouncementPost(post.getId(), user);
-//
-//        // then
-//        MainAnnouncementPostResponseDto dto = postService.inquireMainAnnouncementPost();
-//        assertThat(dto.getPostId()).isEqualTo(post.getId());
-//        assertThat(dto.getTitle()).isEqualTo(post.getTitle());
-//        assertThat(dto.getContent()).isEqualTo(post.getContent());
-//    }
+        // when
+        postService.changeMainAnnouncementPost(post.getId(), user);
+
+        // then
+        MainAnnouncementPostResponseDto dto = postService.inquireMainAnnouncementPost();
+        assertThat(dto.getPostId()).isEqualTo(post.getId());
+        assertThat(dto.getTitle()).isEqualTo(post.getTitle());
+        assertThat(dto.getContent()).isEqualTo(post.getContent());
+    }
+
+    @Test
+    @DisplayName("메인 공지사항을 조회한다.")
+    @Transactional
+    void getMainAnnouncementPost() {        // given
+        PostEntity post = createFixturePost("title", "content", user);
+        user.setType(UserType.MANAGER);
+        user = userRepository.save(user);
+        post = postRepository.save(post);
+
+        // when
+        postService.changeMainAnnouncementPost(post.getId(), user);
+
+        // then
+        MainAnnouncementPostResponseDto dto = postService.inquireMainAnnouncementPost();
+        assertThat(dto.getPostId()).isEqualTo(post.getId());
+        assertThat(dto.getTitle()).isEqualTo(post.getTitle());
+        assertThat(dto.getContent()).isEqualTo(post.getContent());
+    }
 
 }
