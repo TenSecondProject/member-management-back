@@ -104,7 +104,7 @@ spring:
   jpa:
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
     open-in-view: false
     properties:
       hibernate.default_batch_fetch_size: 100
