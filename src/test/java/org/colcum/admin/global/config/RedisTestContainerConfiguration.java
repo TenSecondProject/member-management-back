@@ -7,7 +7,6 @@ import org.testcontainers.utility.DockerImageName;
 
 public class RedisTestContainerConfiguration implements BeforeAllCallback {
 
-
     private static final String REDIS_IMAGE = "redis:7.4.0-alpine";
     private static final int REDIS_INTERNAL_PORT = 6379;
 
