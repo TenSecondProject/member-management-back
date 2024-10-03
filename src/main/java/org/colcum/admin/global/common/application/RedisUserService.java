@@ -35,6 +35,7 @@ public class RedisUserService {
         refreshTokenRedisTemplate.expire(refreshToken.getUuid(), 1L, TimeUnit.DAYS);
     }
 
+    @Transactional(readOnly = true)
     public boolean isRefreshTokenExpired(String refreshTokenKey) {
         Object expireDateObj = refreshTokenRedisTemplate.opsForHash().get(REDIS_USER_PREFIX + refreshTokenKey, "expiryDate");
         if (expireDateObj == null) return true;
@@ -46,6 +47,7 @@ public class RedisUserService {
         return expireDate.isBefore(LocalDateTime.now());
     }
 
+    @Transactional(readOnly = true)
     public Long getUserIdInRefreshToken(String refreshTokenKey) {
         Object userId = refreshTokenRedisTemplate.opsForHash().get(REDIS_USER_PREFIX + refreshTokenKey, "userId");
         if (userId == null) {
@@ -54,6 +56,7 @@ public class RedisUserService {
         return Long.valueOf(userId.toString());
     }
 
+    @Transactional(readOnly = true)
     public String getUserRoleInRefreshToken(String refreshTokenKey) {
         Object role = refreshTokenRedisTemplate.opsForHash().get(REDIS_USER_PREFIX + refreshTokenKey, "role");
         if (role == null) {

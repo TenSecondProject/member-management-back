@@ -34,8 +34,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @Configuration
@@ -62,7 +60,7 @@ public class SecurityConfiguration {
                     .requestMatchers("/api/v1/notifications/**").permitAll()
                     .requestMatchers("/api/login").permitAll()
                     .requestMatchers("/ping/**").permitAll()
-                    .requestMatchers("/api/**").hasRole(UserType.STAFF.name())
+                    .requestMatchers("/api/**").hasAnyRole(UserType.STAFF.name(), UserType.MANAGER.name())
                     .anyRequest().authenticated()
             )
             .addFilterBefore(new JwtAuthenticationFilter(jwt(), userAuthenticationService), UsernamePasswordAuthenticationFilter.class)

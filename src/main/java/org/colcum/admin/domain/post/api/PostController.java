@@ -6,6 +6,7 @@ import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
 import org.colcum.admin.domain.post.api.dto.EmojiDeleteDto;
+import org.colcum.admin.domain.post.api.dto.MainAnnouncementPostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
@@ -139,6 +140,31 @@ public class PostController {
         }
         postService.deletePost(postId, authentication.userEntity);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", null);
+    }
+
+    @GetMapping("/main")
+    @ResponseStatus(value = HttpStatus.OK)
+    public ApiResponse<MainAnnouncementPostResponseDto> inquireMainPost(
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        MainAnnouncementPostResponseDto response = postService.inquireMainAnnouncementPost();
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", response);
+    }
+
+    @PutMapping("/main/{postId}")
+    @ResponseStatus(value = HttpStatus.OK)
+    public ApiResponse<Long> changeMainPost(
+        @PathVariable(value = "postId") Long postId,
+        @AuthenticationPrincipal JwtAuthentication authentication
+    ) {
+        if (Objects.isNull(authentication)) {
+            throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
+        }
+        Long response = postService.changeMainAnnouncementPost(postId, authentication.userEntity);
+        return new ApiResponse<>(HttpStatus.OK.value(), "success", response);
     }
 
     @GetMapping("/bookmarks/summary")

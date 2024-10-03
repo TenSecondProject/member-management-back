@@ -6,6 +6,7 @@ import org.colcum.admin.domain.post.api.dto.CommentCreateRequestDto;
 import org.colcum.admin.domain.post.api.dto.CommentUpdateRequestDto;
 import org.colcum.admin.domain.post.api.dto.EmojiCreateDto;
 import org.colcum.admin.domain.post.api.dto.EmojiDeleteDto;
+import org.colcum.admin.domain.post.api.dto.MainAnnouncementPostResponseDto;
 import org.colcum.admin.domain.post.api.dto.PostBookmarkedResponse;
 import org.colcum.admin.domain.post.api.dto.PostCreateDto;
 import org.colcum.admin.domain.post.api.dto.PostDetailResponseDto;
@@ -14,7 +15,6 @@ import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
 import org.colcum.admin.domain.post.api.dto.SentPostDetailResponseDto;
-import org.colcum.admin.domain.post.api.dto.SentPostResponseDto;
 import org.colcum.admin.domain.post.dao.CommentRepository;
 import org.colcum.admin.domain.post.dao.DirectPostRepository;
 import org.colcum.admin.domain.post.dao.EmojiReactionRepository;
@@ -28,7 +28,9 @@ import org.colcum.admin.domain.post.domain.type.PostStatus;
 import org.colcum.admin.domain.post.domain.type.SearchType;
 import org.colcum.admin.domain.user.dao.UserRepository;
 import org.colcum.admin.domain.user.domain.UserEntity;
+import org.colcum.admin.domain.user.domain.type.UserType;
 import org.colcum.admin.domain.user.domain.vo.Bookmark;
+import org.colcum.admin.global.common.application.RedisPostService;
 import org.colcum.admin.global.exception.CommentNotFoundException;
 import org.colcum.admin.global.exception.EmojiNotFoundException;
 import org.colcum.admin.global.exception.InvalidAuthenticationException;
@@ -41,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -49,6 +50,8 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+
+    private final RedisPostService redisPostService;
 
     private final UserRepository userRepository;
 
@@ -122,6 +125,22 @@ public class PostService {
         }
         post.delete();
         postRepository.save(post);
+    }
+
+    @Transactional(readOnly = true)
+    public MainAnnouncementPostResponseDto inquireMainAnnouncementPost() {
+        return redisPostService.getMainAnnouncementPost();
+    }
+
+    @Transactional(readOnly = true)
+    public Long changeMainAnnouncementPost(Long postId, UserEntity user) {
+        if (!user.getUserType().equals(UserType.MANAGER)) {
+            throw new IllegalArgumentException("해당 유저는 권한이 없습니다.");
+        }
+        PostEntity post = postRepository.findByIdWithUser(postId).orElseThrow(() -> {
+            throw new PostNotFoundException("해당 게시글을 찾을 수 없습니다.");
+        });
+        return redisPostService.changeMainAnnouncementPost(post);
     }
 
     @Transactional(readOnly = true)
