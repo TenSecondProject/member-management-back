@@ -53,7 +53,7 @@ spring:
       on-profile: local
   sql:
     init:
-      mode: always
+      mode: never
   data:
     redis:
       port: 6379
