@@ -88,6 +88,20 @@ ext {
 test {
     useJUnitPlatform()
     outputs.dir snippetsDir
+
+    if (file('.env').exists()) {
+        file('.env').readLines().each() {
+            if (!it.isEmpty() && !it.startsWith("#")) {
+                def pos = it.indexOf("=")
+                def key = it.substring(0, pos)
+                def value = it.substring(pos + 1)
+
+                if (System.getenv(key) == null) {
+                    environment key, value
+                }
+            }
+        }
+    }
 }
 
 asciidoctor.doFirst {
