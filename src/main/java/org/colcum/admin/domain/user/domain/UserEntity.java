@@ -54,7 +54,7 @@ public class UserEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserType userType = UserType.STAFF;
 
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "bookmarks", joinColumns = @JoinColumn(name = "user_id"))
     private Set<Bookmark> bookmarks = new HashSet<>();
 
