@@ -55,7 +55,7 @@ public class PostResponseDto {
         );
     }
 
-    public static PostResponseDto from(PostEntity entity) {
+    public static PostResponseDto from(PostEntity entity, boolean isBookmarked) {
         return new PostResponseDto(
             entity.getId(),
             entity.getTitle(),
@@ -63,7 +63,7 @@ public class PostResponseDto {
             entity.getStatus(),
             entity.getUser().getName(),
             entity.getCreatedAt().truncatedTo(ChronoUnit.MILLIS),
-            entity.getUser().getBookmarks().contains(new Bookmark(entity.getId())),
+            isBookmarked,
             (int) entity.getCommentEntities().stream().filter(c -> !c.isDeleted()).count(),
             EmojiResponseDto.from(entity.getEmojiReactionEntities().stream().filter(e -> !e.isDeleted()).collect(Collectors.toList()))
         );

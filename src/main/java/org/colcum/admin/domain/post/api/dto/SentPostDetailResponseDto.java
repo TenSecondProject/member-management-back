@@ -67,14 +67,14 @@ public class SentPostDetailResponseDto {
         );
     }
 
-    public static SentPostDetailResponseDto from(PostEntity post) {
+    public static SentPostDetailResponseDto from(PostEntity post, boolean isBookmarked) {
         return new SentPostDetailResponseDto(
             post.getId(),
             post.getTitle(),
             post.getContent(),
             post.getCategory(),
             post.getStatus(),
-            post.getUser().getBookmarks().contains(new Bookmark(post.getId())),
+            isBookmarked,
             post.getExpiredDate(),
             post.getUser().getId(),
             post.getUser().getName(),

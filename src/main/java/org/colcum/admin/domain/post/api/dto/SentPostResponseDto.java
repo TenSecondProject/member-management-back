@@ -57,7 +57,7 @@ public class SentPostResponseDto {
         );
     }
 
-    public static SentPostResponseDto from(DirectPost directPost) {
+    public static SentPostResponseDto from(DirectPost directPost, boolean isBookmarked) {
         return new SentPostResponseDto(
             directPost.getPostEntity().getId(),
             directPost.getPostEntity().getTitle(),
@@ -66,7 +66,7 @@ public class SentPostResponseDto {
             directPost.getPostEntity().getUser().getName(),
             directPost.getPostEntity().getCreatedAt().truncatedTo(ChronoUnit.MILLIS),
             directPost.getReceiver().getName(),
-            directPost.getPostEntity().getUser().getBookmarks().contains(new Bookmark(directPost.getPostEntity().getId())),
+            isBookmarked,
             (int) directPost.getPostEntity().getCommentEntities().stream().filter(c -> !c.isDeleted()).count(),
             EmojiResponseDto.from(directPost.getPostEntity().getEmojiReactionEntities().stream().filter(e -> !e.isDeleted()).collect(Collectors.toList()))
         );
