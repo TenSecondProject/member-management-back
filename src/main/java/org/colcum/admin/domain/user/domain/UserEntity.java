@@ -1,8 +1,7 @@
 package org.colcum.admin.domain.user.domain;
 
-import jakarta.persistence.CollectionTable;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,9 +22,9 @@ import org.colcum.admin.domain.user.domain.vo.Bookmark;
 import org.colcum.admin.global.common.domain.BaseEntity;
 import org.colcum.admin.global.util.EmailValidator;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -54,9 +54,9 @@ public class UserEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserType userType = UserType.STAFF;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "bookmarks", joinColumns = @JoinColumn(name = "user_id"))
-    private Set<Bookmark> bookmarks = new HashSet<>();
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name = "userId")
+    private List<Bookmark> bookmarks = new ArrayList<>();
 
     public UserEntity(String email, String password, String name, Branch branch) {
         EmailValidator.validate(email);

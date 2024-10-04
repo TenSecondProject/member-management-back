@@ -32,6 +32,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.colcum.admin.domain.post.domain.QCommentEntity.commentEntity;
 import static org.colcum.admin.domain.post.domain.QDirectPost.directPost;
@@ -49,7 +50,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
     @Override
     public Page<PostResponseDto> search(PostSearchCondition condition, UserEntity receivedUser, Pageable pageable) {
         BooleanBuilder builder = getPostBooleanBuilder(condition);
-        List<PostEntity> fetch = queryFactory
+        List<PostEntity> posts = queryFactory
             .select(postEntity).distinct()
             .from(postEntity)
             .innerJoin(postEntity.user, userEntity)
@@ -76,8 +77,14 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             .orderBy(this.getOrderBySpecifiers(postEntity, pageable))
             .fetch();
 
-        List<PostResponseDto> dtos = fetch.stream()
-            .map(PostResponseDto::from)
+        List<Bookmark> bookmarks = receivedUser.getBookmarks();
+        List<Long> bookmarkedPostIds = bookmarks.stream().map(Bookmark::getPostId).toList();
+
+        List<PostResponseDto> dtos = posts.stream()
+            .map(p -> {
+                boolean isBookmarked = bookmarkedPostIds.contains(p.getId());
+                return PostResponseDto.from(p, isBookmarked);
+            })
             .toList();
 
         JPAQuery<Long> count = queryFactory
@@ -91,7 +98,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
     @Override
     public Page<PostResponseDto> searchWithBookmarkedPost(PostSearchCondition condition, UserEntity user, Pageable pageable) {
         BooleanBuilder builder = getPostBooleanBuilder(condition);
-        List<PostEntity> fetch = queryFactory
+        List<PostEntity> posts = queryFactory
             .select(postEntity).distinct()
             .from(postEntity)
             .leftJoin(postEntity.commentEntities, commentEntity)
@@ -109,8 +116,14 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             .orderBy(this.getOrderBySpecifiers(postEntity, pageable))
             .fetch();
 
-        List<PostResponseDto> dtos = fetch.stream()
-            .map(PostResponseDto::from)
+        List<Bookmark> bookmarks = user.getBookmarks();
+        List<Long> bookmarkedPostIds = bookmarks.stream().map(Bookmark::getPostId).toList();
+
+        List<PostResponseDto> dtos = posts.stream()
+            .map(p -> {
+                boolean isBookmarked = bookmarkedPostIds.contains(p.getId());
+                return PostResponseDto.from(p, isBookmarked);
+            })
             .toList();
 
         JPAQuery<Long> count = queryFactory
@@ -124,7 +137,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
     @Override
     public Page<PostResponseDto> searchReceivedPost(PostSearchCondition condition, UserEntity receivedUser, Pageable pageable) {
         BooleanBuilder builder = getPostBooleanBuilder(condition);
-        List<PostEntity> fetch = queryFactory
+        List<PostEntity> posts = queryFactory
             .select(postEntity).distinct()
             .from(directPost)
             .innerJoin(directPost.postEntity, postEntity)
@@ -138,8 +151,14 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             .orderBy(this.getOrderBySpecifiers(postEntity, pageable))
             .fetch();
 
-        List<PostResponseDto> dtos = fetch.stream()
-            .map(PostResponseDto::from)
+        List<Bookmark> bookmarks = receivedUser.getBookmarks();
+        List<Long> bookmarkedPostIds = bookmarks.stream().map(Bookmark::getPostId).toList();
+
+        List<PostResponseDto> dtos = posts.stream()
+            .map(p -> {
+                boolean isBookmarked = bookmarkedPostIds.contains(p.getId());
+                return PostResponseDto.from(p, isBookmarked);
+            })
             .toList();
 
         JPAQuery<Long> count = queryFactory
@@ -153,7 +172,7 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
     @Override
     public Page<PostResponseDto> findSentPostByUserId(PostSearchCondition condition, UserEntity user, Pageable pageable) {
         BooleanBuilder builder = getPostBooleanBuilder(condition);
-        List<PostEntity> fetch = queryFactory
+        List<PostEntity> posts = queryFactory
             .select(postEntity).distinct()
             .from(postEntity)
             .innerJoin(postEntity.user, userEntity)
@@ -170,8 +189,14 @@ public class CustomPostRepositoryImpl implements CustomPostRepository {
             .orderBy(this.getOrderBySpecifiers(postEntity, pageable))
             .fetch();
 
-        List<PostResponseDto> dtos = fetch.stream()
-            .map(PostResponseDto::from)
+        List<Bookmark> bookmarks = user.getBookmarks();
+        List<Long> bookmarkedPostIds = bookmarks.stream().map(Bookmark::getPostId).toList();
+
+        List<PostResponseDto> dtos = posts.stream()
+            .map(p -> {
+                boolean isBookmarked = bookmarkedPostIds.contains(p.getId());
+                return PostResponseDto.from(p, isBookmarked);
+            })
             .toList();
 
         JPAQuery<Long> count = queryFactory

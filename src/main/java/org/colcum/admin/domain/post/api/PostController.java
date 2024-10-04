@@ -80,7 +80,7 @@ public class PostController {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
         log.info("Post is inquired, Post Id : {}, User Id: {}", postId, authentication.userEntity.getId());
-        PostDetailResponseDto response = postService.inquirePostDetail(postId);
+        PostDetailResponseDto response = postService.inquirePostDetail(postId, authentication.userEntity);
 
         return new ApiResponse<>(HttpStatus.OK.value(), "success", response);
     }
@@ -95,7 +95,7 @@ public class PostController {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
         log.info("Post is inquired, Post Id : {}, User Id: {}", postId, authentication.userEntity.getId());
-        SentPostDetailResponseDto response = postService.inquireSentPostDetail(postId);
+        SentPostDetailResponseDto response = postService.inquireSentPostDetail(postId, authentication.userEntity);
 
         return new ApiResponse<>(HttpStatus.OK.value(), "success", response);
     }

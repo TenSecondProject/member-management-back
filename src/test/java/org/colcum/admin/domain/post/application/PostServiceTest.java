@@ -122,7 +122,7 @@ class PostServiceTest {
         // then
         assertThat(posts.getContent().size()).isEqualTo(3);
         assertThat(posts.getSize()).isEqualTo(10);
-        assertThat(posts.getContent()).contains(PostResponseDto.from(post1), PostResponseDto.from(post2), PostResponseDto.from(post3));
+        assertThat(posts.getContent()).contains(PostResponseDto.from(post1, false), PostResponseDto.from(post2, false), PostResponseDto.from(post3, false));
     }
 
     @Test
@@ -148,7 +148,7 @@ class PostServiceTest {
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
-        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1), PostResponseDto.from(post2), PostResponseDto.from(post3));
+        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1, false), PostResponseDto.from(post2, false), PostResponseDto.from(post3, false));
     }
 
     @Test
@@ -171,7 +171,7 @@ class PostServiceTest {
 
         // then
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
-        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1), PostResponseDto.from(post2), PostResponseDto.from(post3));
+        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1, false), PostResponseDto.from(post2, false), PostResponseDto.from(post3, false));
     }
 
     @Test
@@ -197,7 +197,7 @@ class PostServiceTest {
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
-        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1), PostResponseDto.from(post2), PostResponseDto.from(post3));
+        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1, false), PostResponseDto.from(post2, false), PostResponseDto.from(post3, false));
     }
 
     @Test
@@ -220,7 +220,7 @@ class PostServiceTest {
 
         // then
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
-        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1), PostResponseDto.from(post2), PostResponseDto.from(post3));
+        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1, false), PostResponseDto.from(post2, false), PostResponseDto.from(post3, false));
     }
 
     @Test
@@ -247,7 +247,7 @@ class PostServiceTest {
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
-        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1), PostResponseDto.from(post2), PostResponseDto.from(post3));
+        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1, false), PostResponseDto.from(post2, false), PostResponseDto.from(post3, false));
     }
 
     @Test
@@ -274,7 +274,7 @@ class PostServiceTest {
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
-        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1), PostResponseDto.from(post2), PostResponseDto.from(post3));
+        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1, false), PostResponseDto.from(post2, false), PostResponseDto.from(post3, false));
     }
 
     @Test
@@ -301,7 +301,7 @@ class PostServiceTest {
         // then
         assertThat(nothing.getContent().size()).isEqualTo(0);
         assertThat(allPosts.getContent().size()).isEqualTo(NUMBER_OF_POST);
-        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1), PostResponseDto.from(post2), PostResponseDto.from(post3));
+        assertThat(allPosts.getContent()).contains(PostResponseDto.from(post1, false), PostResponseDto.from(post2, false), PostResponseDto.from(post3, false));
     }
 
     @Test
@@ -336,7 +336,7 @@ class PostServiceTest {
         post = postRepository.save(post);
 
         // when
-        PostDetailResponseDto response = postService.inquirePostDetail(post.getId());
+        PostDetailResponseDto response = postService.inquirePostDetail(post.getId(), user);
 
         // then
         assertThat(post.getId()).isEqualTo(response.getId());
@@ -359,7 +359,7 @@ class PostServiceTest {
         post = postRepository.save(post);
 
         // when
-        PostDetailResponseDto response = postService.inquirePostDetail(post.getId());
+        PostDetailResponseDto response = postService.inquirePostDetail(post.getId(), user);
 
         // then
         assertThat(post.getId()).isEqualTo(response.getId());
@@ -426,7 +426,7 @@ class PostServiceTest {
         postService.deletePost(postId, user);
 
         // then
-        assertThrows(PostNotFoundException.class, () -> postService.inquirePostDetail(postId));
+        assertThrows(PostNotFoundException.class, () -> postService.inquirePostDetail(postId, user));
     }
 
     @Test
@@ -442,7 +442,7 @@ class PostServiceTest {
         postRepository.save(post3);
 
         // when
-        user.addBookmark(new Bookmark(post1.getId()));
+        user.addBookmark(new Bookmark(post1.getId(), user.getId()));
         user = userRepository.save(user);
         List<PostBookmarkedResponse> responses = postService.findBookmarkedPosts(user);
 
@@ -487,12 +487,12 @@ class PostServiceTest {
         post2 = postRepository.save(post2);
         post3 = postRepository.save(post3);
 
-        Bookmark target = new Bookmark(post1.getId());
+        Bookmark target = new Bookmark(post1.getId(), user.getId());
 
         // when
         user.addBookmark(target);
-        user.addBookmark(new Bookmark(post2.getId()));
-        user.addBookmark(new Bookmark(post3.getId()));
+        user.addBookmark(new Bookmark(post2.getId(), user.getId()));
+        user.addBookmark(new Bookmark(post3.getId(), user.getId()));
         user = userRepository.save(user);
 
         postService.removeBookmark(target.getPostId(), user);
@@ -522,7 +522,7 @@ class PostServiceTest {
         comment3 = commentRepository.save(comment3);
 
         // when
-        PostDetailResponseDto response = postService.inquirePostDetail(post.getId());
+        PostDetailResponseDto response = postService.inquirePostDetail(post.getId(), user);
 
         // then
         assertThat(response.getCommentResponseDtos()).contains(CommentResponseDto.from(comment1));
@@ -549,7 +549,7 @@ class PostServiceTest {
         commentRepository.save(comment3);
 
         // when
-        PostDetailResponseDto response = postService.inquirePostDetail(post.getId());
+        PostDetailResponseDto response = postService.inquirePostDetail(post.getId(), user);
 
         // then
         assertThat(response.getCommentResponseDtos()).contains(CommentResponseDto.from(comment1));
@@ -569,7 +569,7 @@ class PostServiceTest {
         Long commentId = postService.addComment(post.getId(), dto, user);
 
         // then
-        PostDetailResponseDto response = postService.inquirePostDetail(post.getId());
+        PostDetailResponseDto response = postService.inquirePostDetail(post.getId(), user);
         assertThat(response.getCommentResponseDtos().stream().map(CommentResponseDto::getId)).contains(commentId);
     }
 
@@ -643,7 +643,7 @@ class PostServiceTest {
         // then
         assertThat(posts.getContent().size()).isEqualTo(1);
         assertThat(posts.getSize()).isEqualTo(10);
-        assertThat(posts.getContent()).contains(PostResponseDto.from(post));
+        assertThat(posts.getContent()).contains(PostResponseDto.from(post, false));
     }
 
     @Test

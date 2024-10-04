@@ -88,7 +88,7 @@ class PostRepositoryTest {
         // then
         assertThat(posts.getContent().size()).isEqualTo(3);
         assertThat(posts.getSize()).isEqualTo(10);
-        assertThat(posts.getContent()).contains(PostResponseDto.from(post1), PostResponseDto.from(post2), PostResponseDto.from(post3));
+        assertThat(posts.getContent()).contains(PostResponseDto.from(post1, false), PostResponseDto.from(post2, false), PostResponseDto.from(post3, false));
     }
 
     @Test

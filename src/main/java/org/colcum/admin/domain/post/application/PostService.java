@@ -15,6 +15,7 @@ import org.colcum.admin.domain.post.api.dto.PostSearchCondition;
 import org.colcum.admin.domain.post.api.dto.PostUpdateDto;
 import org.colcum.admin.domain.post.api.dto.ReceivedPostSummaryResponseDto;
 import org.colcum.admin.domain.post.api.dto.SentPostDetailResponseDto;
+import org.colcum.admin.domain.post.dao.BookmarkRepository;
 import org.colcum.admin.domain.post.dao.CommentRepository;
 import org.colcum.admin.domain.post.dao.DirectPostRepository;
 import org.colcum.admin.domain.post.dao.EmojiReactionRepository;
@@ -31,6 +32,7 @@ import org.colcum.admin.domain.user.domain.UserEntity;
 import org.colcum.admin.domain.user.domain.type.UserType;
 import org.colcum.admin.domain.user.domain.vo.Bookmark;
 import org.colcum.admin.global.common.application.RedisPostService;
+import org.colcum.admin.global.exception.BookmarkNotFoundException;
 import org.colcum.admin.global.exception.CommentNotFoundException;
 import org.colcum.admin.global.exception.EmojiNotFoundException;
 import org.colcum.admin.global.exception.InvalidAuthenticationException;
@@ -43,6 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -61,6 +64,8 @@ public class PostService {
 
     private final EmojiReactionRepository emojiReactionRepository;
 
+    private final BookmarkRepository bookmarkRepository;
+
     @Transactional(readOnly = true)
     public Page<PostResponseDto> findByCriteria(SearchType searchType, String searchValue, List<PostCategory> categories, List<PostStatus> statuses, UserEntity userEntity, Pageable pageable) {
         return postRepository.search(
@@ -71,22 +76,26 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PostDetailResponseDto inquirePostDetail(Long id) {
-        PostEntity post = postRepository.findByIdAndDeletedIsFalse(id)
+    public PostDetailResponseDto inquirePostDetail(Long postId, UserEntity user) {
+        PostEntity post = postRepository.findByIdAndDeletedIsFalse(postId)
             .orElseThrow(() -> new PostNotFoundException("대상 게시글은 존재하지 않습니다."));
 
-        return PostDetailResponseDto.from(post);
+        boolean isBookmarked = bookmarkRepository.findByPostIdAndUserId(postId, user.getId()).isEmpty();
+
+        return PostDetailResponseDto.from(post, isBookmarked);
     }
 
     @Transactional(readOnly = true)
-    public SentPostDetailResponseDto inquireSentPostDetail(Long id) {
-        PostEntity post = postRepository.findByIdAndDeletedIsFalse(id)
+    public SentPostDetailResponseDto inquireSentPostDetail(Long postId, UserEntity user) {
+        PostEntity post = postRepository.findByIdAndDeletedIsFalse(postId)
             .orElseThrow(() -> new PostNotFoundException("대상 게시글은 존재하지 않습니다."));
 
-        List<String> receiversName = directedPostRepository.findByPostEntity_IdAndDeletedIsFalse(id).stream()
+        List<String> receiversName = directedPostRepository.findByPostEntity_IdAndDeletedIsFalse(postId).stream()
             .map(d -> d.getReceiver().getName()).toList();
 
-        SentPostDetailResponseDto dto = SentPostDetailResponseDto.from(post);
+        boolean isBookmarked = bookmarkRepository.findByPostIdAndUserId(postId, user.getId()).isEmpty();
+
+        SentPostDetailResponseDto dto = SentPostDetailResponseDto.from(post, isBookmarked);
         dto.setReceiversName(receiversName);
         return dto;
     }
@@ -183,15 +192,18 @@ public class PostService {
     @Transactional
     public void addBookmark(Long postId, UserEntity user) {
         log.info("Post is bookmarked, Post Id : {}, User Id: {}", postId, user.getId());
-        user.addBookmark(new Bookmark(postId));
+        Bookmark bookmark = new Bookmark(postId, user.getId());
+        user.addBookmark(bookmark);
         userRepository.save(user);
     }
 
     @Transactional
     public void removeBookmark(Long postId, UserEntity user) {
         log.info("Bookmark is removed , Post Id : {}, User Id: {}", postId, user.getId());
-        user.removeBookmark(new Bookmark(postId));
-        userRepository.save(user);
+        Bookmark bookmark = bookmarkRepository.findByPostIdAndUserId(postId, user.getId())
+            .orElseThrow(() -> new BookmarkNotFoundException("해당 북마크를 찾을 수 없습니다."));
+
+        bookmarkRepository.delete(bookmark);
     }
 
     @Transactional(readOnly = true)

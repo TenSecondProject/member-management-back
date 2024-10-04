@@ -252,7 +252,7 @@ class PostControllerTest extends AbstractRestDocsTest {
         );
 
         // when
-        when(postService.inquirePostDetail(postId)).thenReturn(dtos);
+        when(postService.inquirePostDetail(postId, principal.userEntity)).thenReturn(dtos);
 
         // then
         this.mockMvc
@@ -291,8 +291,9 @@ class PostControllerTest extends AbstractRestDocsTest {
     void inquirePostWithNonExist() throws Exception {
         // given
         Long nonExistPostId = 1L;
+        JwtAuthentication principal = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        when(postService.inquirePostDetail(nonExistPostId)).thenThrow(new PostNotFoundException("대상 게시글은 존재하지 않습니다."));
+        when(postService.inquirePostDetail(nonExistPostId, principal.userEntity)).thenThrow(new PostNotFoundException("대상 게시글은 존재하지 않습니다."));
 
         // when & then
         this.mockMvc
@@ -435,7 +436,7 @@ class PostControllerTest extends AbstractRestDocsTest {
         // given
         UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
         Long postId = 1L;
-        Bookmark target = new Bookmark(postId);
+        Bookmark target = new Bookmark(postId, user.getId());
 
         // when
         doAnswer(invocation -> {
@@ -465,7 +466,7 @@ class PostControllerTest extends AbstractRestDocsTest {
         // given
         UserEntity user = ((JwtAuthentication) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).userEntity;
         Long postId = 1L;
-        Bookmark target = new Bookmark(postId);
+        Bookmark target = new Bookmark(postId, user.getId());
         user.addBookmark(target);
 
         // when
