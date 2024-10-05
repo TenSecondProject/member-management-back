@@ -63,9 +63,7 @@ public class PostController {
         if (Objects.isNull(authentication)) {
             throw new InvalidAuthenticationException("해당 서비스는 로그인 후 사용하실 수 있습니다.");
         }
-        if (Objects.nonNull(categories) && categories.contains(PostCategory.DELIVERY)) {
-            throw new IllegalArgumentException("공지사항에는 Direct Post가 조회되지 않습니다.");
-        }
+
         Page<PostResponseDto> responses = postService.findByCriteria(searchType, searchValue, categories, statuses, authentication.userEntity, pageable);
         return new ApiResponse<>(HttpStatus.OK.value(), "success", responses);
     }
