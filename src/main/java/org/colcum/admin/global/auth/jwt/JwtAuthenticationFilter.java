@@ -68,8 +68,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 } catch (TokenExpiredException e) {
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                     response.setCharacterEncoding("UTF-8");
-                    response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-                    response.setHeader("Access-Control-Allow-Credentials", "true");
                     response.setStatus(HttpStatus.UNAUTHORIZED.value());
                     response.getWriter().write(objectMapper.writeValueAsString(new ApiResponse<Void>(HttpStatus.UNAUTHORIZED.value(), e.getMessage(), null)));
                     return;
