@@ -104,7 +104,7 @@ spring:
   jpa:
     defer-datasource-initialization: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
     open-in-view: false
     show-sql: true
     properties:
@@ -113,7 +113,7 @@ spring:
         format_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQLDialect
-  sql.init.mode: always
+  sql.init.mode: never
 
 server:
   port: ${SERVER_PORT}
