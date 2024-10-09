@@ -106,8 +106,11 @@ spring:
     hibernate:
       ddl-auto: none
     open-in-view: false
+    show-sql: true
     properties:
-      hibernate.default_batch_fetch_size: 100
+      hibernate.default_batch_fetch_size: 10
+      hibernate:
+        format_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQLDialect
   sql.init.mode: never
