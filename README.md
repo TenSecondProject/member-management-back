@@ -41,7 +41,8 @@
 
 ## 기능
 
-### [게시글]
+**[로그인 및 로그인 실패, 로그아웃]**
+![loginAndLogout](https://github.com/user-attachments/assets/3533f2f4-bd9d-4eed-8054-afc04d66f037)
 
 **[게시글 목록 조회 및 상세페이지 조회]**
 ![Animation](https://github.com/user-attachments/assets/0c978a8d-f7c8-4018-b492-1c7eccb3b7e4)
@@ -61,5 +62,7 @@
 **[댓글 등록, 수정, 삭제]**
 ![comment](https://github.com/user-attachments/assets/31571e17-3d14-46cc-b174-d9d45a5867d0)
 
-**[특정 유저에게 게시글 전달]**
+**[특정 유저에게 게시글 전달 및 수신 & 발신함 조회]**
+![sendAndReceive](https://github.com/user-attachments/assets/ab9becbb-89c8-4b31-8bad-67cb14c94b08)
+
 
